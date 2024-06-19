@@ -1,5 +1,5 @@
 #!/bin/bash
 
-g++ --std=c++11 -I../mrp/midicl sequencer.cpp -framework CoreMIDI -framework CoreFoundation -L ../mrp/midicl/lib/ -lmidicl -o sequencer
+g++ --std=c++11 -Imidicl sequencer.cpp -framework CoreMIDI -framework CoreFoundation -L midicl/lib/ -lmidicl -o sequencer
 
 
