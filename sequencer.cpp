@@ -334,13 +334,17 @@ int main(int argc, const char *argv[])
 
 	printf("found %d destinations\n", numDestinations);
 
-	MIDIEndpointRef	destinationRef = MIDIGetDestination(8);
+	// 2 = 303
+	// 8 = Pro-3
+	// for the USB hosts it depends on what order they are powered up LFS
+	int	destinationNumber = 8;
+	MIDIEndpointRef	destinationRef = MIDIGetDestination(destinationNumber);
 
 	CFStringRef	property = nullptr;
 	char	displayName [64];
 	displayName[0] = 0;
 
-	if (MIDIObjectGetStringProperty(MIDIGetDestination(8), kMIDIPropertyDisplayName, &property) == noErr)
+	if (MIDIObjectGetStringProperty(MIDIGetDestination(destinationNumber), kMIDIPropertyDisplayName, &property) == noErr)
 	{
 		CFStringGetCString (property, displayName, sizeof (displayName), 0);
 		CFRelease (property);
