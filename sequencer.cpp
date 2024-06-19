@@ -356,8 +356,8 @@ int main(int argc, const char *argv[])
 	{
 		Step	&step(sequence.GetStep(stepNumber));
 
-		step.GetNoteOption(0).mNoteLower = 50;
-		step.GetNoteOption(0).mNoteUpper = 50;
+		step.GetNoteOption(0).mNoteLower = 40;
+		step.GetNoteOption(0).mNoteUpper = 60;
 		step.GetNoteOption(0).mProbability = 75;
 	
 		step.GetNoteOption(1).mNoteLower = 50;
@@ -380,29 +380,34 @@ int main(int argc, const char *argv[])
 		{
 			if (selectedOption->mRatchet)
 			{
+				// chrono doesn't understand doubles
+				// so we use 7x31ms + 33ms
+				auto	sleepPeriod = std::chrono::milliseconds(31);
+
 				// ratchet 1
 				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 
 				// ratchet 2
 				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 				
 				// ratchet 3
 				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 
 				// ratchet 4
 				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(32));
+				std::this_thread::sleep_for(sleepPeriod);
 				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(30));
+				
+				std::this_thread::sleep_for(std::chrono::milliseconds(33));
 			}
 			else
 			{
