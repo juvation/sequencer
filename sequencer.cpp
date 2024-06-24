@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <dispatch/dispatch.h>
 
 // language headers
 
@@ -16,6 +18,140 @@
 #include "MIDICLClient.h"
 #include "MIDICLOutputPort.h"
 
+// TIMER IMPLEMENTATION
+
+#if !defined(MAC_OS_X_VERSION_10_12) || \
+    (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12)
+typedef int clockid_t;
+#endif
+
+struct itimerspec {
+    struct timespec it_interval;    /* timer period */
+    struct timespec it_value;       /* timer expiration */
+};
+
+struct sigevent;
+
+/* If used a lot, queue should probably be outside of this struct */
+struct macos_timer {
+    dispatch_queue_t tim_queue;
+    dispatch_source_t tim_timer;
+    void (*tim_func)(union sigval);
+    void *tim_arg;
+};
+
+typedef struct macos_timer *timer_t;
+
+static inline void
+_timer_cancel(void *arg)
+{
+    struct macos_timer *tim = (struct macos_timer *)arg;
+    dispatch_release(tim->tim_timer);
+    dispatch_release(tim->tim_queue);
+    tim->tim_timer = NULL;
+    tim->tim_queue = NULL;
+    free(tim);
+}
+
+static inline void
+_timer_handler(void *arg)
+{
+    struct macos_timer *tim = (struct macos_timer *)arg;
+    union sigval sv;
+
+    sv.sival_ptr = tim->tim_arg;
+
+    if (tim->tim_func != NULL)
+        tim->tim_func(sv);
+}
+
+static inline int
+timer_create(clockid_t clockid, struct sigevent *sevp,
+    timer_t *timerid)
+{
+    struct macos_timer *tim;
+
+    *timerid = NULL;
+
+    switch (clockid) {
+        case CLOCK_REALTIME:
+
+            /* What is implemented so far */
+            if (sevp->sigev_notify != SIGEV_THREAD) {
+                errno = ENOTSUP;
+                return (-1);
+            }
+
+            tim = (struct macos_timer *)
+                malloc(sizeof (struct macos_timer));
+            if (tim == NULL) {
+                errno = ENOMEM;
+                return (-1);
+            }
+
+            tim->tim_queue =
+                dispatch_queue_create("timerqueue",
+                0);
+            tim->tim_timer =
+                dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER,
+                0, 0, tim->tim_queue);
+
+            tim->tim_func = sevp->sigev_notify_function;
+            tim->tim_arg = sevp->sigev_value.sival_ptr;
+            *timerid = tim;
+
+            /* Opting to use pure C instead of Block versions */
+            dispatch_set_context(tim->tim_timer, tim);
+            dispatch_source_set_event_handler_f(tim->tim_timer,
+                _timer_handler);
+            dispatch_source_set_cancel_handler_f(tim->tim_timer,
+                _timer_cancel);
+
+            return (0);
+        default:
+            break;
+    }
+
+    errno = EINVAL;
+    return (-1);
+}
+
+static inline int
+timer_settime(timer_t tim, int flags,
+    const struct itimerspec *its, struct itimerspec *remainvalue)
+{
+    if (tim != NULL) {
+
+        /* Both zero, is disarm */
+        if (its->it_value.tv_sec == 0 &&
+            its->it_value.tv_nsec == 0) {
+        /* There's a comment about suspend count in Apple docs */
+            dispatch_suspend(tim->tim_timer);
+            return (0);
+        }
+
+        dispatch_time_t start;
+        start = dispatch_time(DISPATCH_TIME_NOW,
+            NSEC_PER_SEC * its->it_value.tv_sec +
+            its->it_value.tv_nsec);
+        dispatch_source_set_timer(tim->tim_timer, start,
+            NSEC_PER_SEC * its->it_value.tv_sec +
+            its->it_value.tv_nsec,
+            0);
+        dispatch_resume(tim->tim_timer);
+    }
+    return (0);
+}
+
+static inline int
+timer_delete(timer_t tim)
+{
+    /* Calls _timer_cancel() */
+    if (tim != NULL)
+        dispatch_source_cancel(tim->tim_timer);
+
+    return (0);
+}
 // UTILITY LOL
 
 class Utility
@@ -267,9 +403,12 @@ class Sequencer
 	
 		Sequencer();
 
-		void
-		Play();
+		bool
+		Play(MIDICLOutputPort *inOutputPort);
 	
+		void
+		Stop();
+
 		void
 		SetBPM(float inBPM)
 		{
@@ -277,54 +416,180 @@ class Sequencer
 		}
 
 		Sequence &
-		GetSequence(uint32_t inSequenceNumber)
+		GetSequence()
 		{
-			return mSequences[inSequenceNumber];
+			return mSequence;
 		}
 
-		void
-		SetSequence(uint32_t inSequenceNumber, Sequence &inSequence)
-		{
-			mSequences[inSequenceNumber] = inSequence;
-		}
+		uint32_t		mTimerTicks;
 
 	private:
 	
-		std::vector<Sequence>	mSequences;
+		static void TimerTickProc(union sigval inValue);
+
+		void TimerTick();
+
+		MIDICLOutputPort	*mOutputPort;
+		
+		int								mStepNumber;
+		Sequence					mSequence;
+		
+		// timer stuff
+		
+		timer_t						mTimer;
+		struct sigevent		mEvent;
+		struct itimerspec	mInterval;
 
 };
 
+Sequencer::Sequencer()
+	:
+	mStepNumber(0),
+	mTimerTicks(0),
+	mTimer(0)
+{
+}
+
+bool
+Sequencer::Play(MIDICLOutputPort *inOutputPort)
+{
+	mOutputPort = inOutputPort;
+
+	int	result = 0;
+
+	mSequence.SelectNoteOption(0);
+
+	mTimer = 0;
+	mTimerTicks = 0;
+
+	mEvent.sigev_notify = SIGEV_THREAD;
+	mEvent.sigev_value.sival_ptr = (void *)this;
+	mEvent.sigev_notify_function = TimerTickProc;
+	mEvent.sigev_notify_attributes = NULL;
+
+	result = timer_create(CLOCK_REALTIME, &mEvent, &mTimer);
+
+	if (result)
+		return false;
+	
+	mInterval.it_value.tv_sec = 0;
+	mInterval.it_value.tv_nsec = 20833333;
+
+	result = timer_settime(mTimer, 0, &mInterval, NULL);
+
+	if (result)
+	{
+		result = errno;
+		timer_delete(mTimer);
+		mTimer = 0;
+		return result;
+	}
+
+	return true;
+}
+
 void
-Sequencer::Play()
+Sequencer::Stop()
 {
+	if (mTimer)
+	{
+		timer_delete(mTimer);
+		mTimer = 0;
+	}
 }
 
-#if 0
-
-// the problem with doing stuff on off-clocks is that we might not have any!
-// if the division is set to 24ppqn etc
-
-// the time is the time of the next step, which is likely in the future
-// note this should be called after any step division action
-onClockTick(time)
+void
+Sequencer::TimerTickProc(union sigval inValue)
 {
-	uint32_t	stepNumber = DetermineStep(time);
-
-	// send the messages we already decided on
-	sendStepMessages(stepNumber, time);
-
-	uint32_t	nextStepNumber = (stepNumber + 1) % stepCount;
-
-	updateAccumulator(nextStepNumber);
-	selectControlOption(nextStepNumber);
-	selectNoteOption(nextStepNumber);
+	Sequencer	*sequencer = (Sequencer *) inValue.sival_ptr;
+	sequencer->TimerTick();
 }
 
-#endif
+// this goes off at 24ppqn
+// HACK hardwire steps to quaver length
+void
+Sequencer::TimerTick()
+{
+	uint32_t		stepNumber = mTimerTicks / 12;
+	NoteOption	*selectedOption = mSequence.GetSelectedNoteOption(stepNumber);
+
+	if (selectedOption)
+	{
+		uint32_t	subtick = mTimerTicks % (24 / 2);
+	
+		switch(subtick)
+		{
+			// new step
+			case 0:
+				printf("step %u firing (ratchet? %d)\n", stepNumber, selectedOption->mRatchet);
+				mOutputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+			
+			// if ratcheting then turn off note 1 here
+			case 2:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+				
+			// if ratcheting then turn on note 2 here
+			case 3:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+				
+			// if ratcheting then turn off note 2 here
+			case 5:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+				
+			// if ratcheting then turn on note 3 here
+			case 6:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+
+			// if ratcheting then turn off note 3 here
+			case 8:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+			
+			// if ratcheting then turn on note 4 here
+			case 9:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
+				break;
+				
+			// if ratcheting then turn off note 4 here
+			case 11:
+				if (selectedOption->mRatchet)
+					mOutputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
+				
+				// and this is a good spot to calculate the next step's option
+				mSequence.SelectNoteOption((stepNumber + 1) % 16);
+				break;
+		}
+
+		// now sort out whether to turn a non-ratchet note off
+		if (!selectedOption->mRatchet)
+		{
+			if (subtick == selectedOption->mGateTime / 12)
+				mOutputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
+		}
+	}
+
+	mTimerTicks++;
+	
+	// HACK hardwire to 16 steps
+	if (mTimerTicks / 12 == 16)
+		mTimerTicks = 0;
+}
 
 int main(int argc, const char *argv[])
 {
-	Sequence	sequence;
+	Sequencer	sequencer;
+	Sequence	&sequence(sequencer.GetSequence());
 
 	srandom(time(nullptr));
 
@@ -352,8 +617,8 @@ int main(int argc, const char *argv[])
 
 	printf("selecting destination %d (%s)\n", 8, displayName);
 
-	MIDICLOutputPort	*outputPort(client.MakeOutputPort (CFSTR ("AssQuencer Output")));
-	outputPort->SetDestination (destinationRef);
+	MIDICLOutputPort	*outputPort(client.MakeOutputPort(CFSTR ("AssQuencer Output")));
+	outputPort->SetDestination(destinationRef);
 
 	// set up our sequence
 	for (uint32_t stepNumber = 0; stepNumber < 16; stepNumber++)
@@ -362,7 +627,9 @@ int main(int argc, const char *argv[])
 
 		step.GetNoteOption(0).mNoteLower = 40;
 		step.GetNoteOption(0).mNoteUpper = 60;
-		step.GetNoteOption(0).mProbability = 75;
+		step.GetNoteOption(0).mGateTimeLower = 70;
+		step.GetNoteOption(0).mGateTimeUpper = 80;
+		step.GetNoteOption(0).mProbability = 90;
 	
 		step.GetNoteOption(1).mNoteLower = 50;
 		step.GetNoteOption(1).mNoteUpper = 50;
@@ -370,86 +637,18 @@ int main(int argc, const char *argv[])
 		step.GetNoteOption(1).mRatchetProbability = 100;
 	}
 
-	// before we start, select the first note option
-	sequence.SelectNoteOption(0);
-
-	// we wait sync for a quaver length LOL
-	for (uint32_t stepNumber = 0; stepNumber < 16; stepNumber++)
+	if (sequencer.Play(outputPort))
 	{
-		uint32_t	waitTime = 0;
-
-		NoteOption	*selectedOption = sequence.GetSelectedNoteOption(stepNumber);
-
-		if (selectedOption)
-		{
-			if (selectedOption->mRatchet)
-			{
-				// chrono doesn't understand doubles
-				// so we use 7x31ms + 33ms
-				auto	sleepPeriod = std::chrono::milliseconds(31);
-
-				// ratchet 1
-				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-
-				// ratchet 2
-				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-				
-				// ratchet 3
-				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-
-				// ratchet 4
-				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(sleepPeriod);
-				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-				
-				std::this_thread::sleep_for(std::chrono::milliseconds(33));
-			}
-			else
-			{
-				outputPort->SendNoteOn(0, selectedOption->mNote, selectedOption->mVelocity);
-				std::this_thread::sleep_for(std::chrono::milliseconds(125));
-				outputPort->SendNoteOff(0, selectedOption->mNote, selectedOption->mVelocity);
-
-				waitTime = 125;
-			}
-		}
-		else
-		{
-			waitTime = 250;
-		}
-
-		// calculate the next step option
-		sequence.SelectNoteOption((stepNumber + 1) % 16);
-		
-		// wait for it...
-		std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+		sleep(10);
+	
+		sequencer.Stop();
+	
+		printf("sequencer received %d timer ticks\n", sequencer.mTimerTicks);
+	}
+	else
+	{
+		printf("could not start sequencer\n");
 	}
 }
 
-/*
-
-
-If we have 120bpm
-then 1 crotchet is 0.5 second = 500ms
-then 1 quaver is 0.25 second = 250ms
-and a 2 step (total) ratchet is 125ms
-and a 4 step (total) ratchet is 62.5ms
-
-A whole quaver is 250ms
-In total we have 4 notes per quaver for a ratchet
-the MIDI note ons are 62.5ms apart
-which means for 50% gate time the notes are 31.75ms long
-
-
-
-*/
 
