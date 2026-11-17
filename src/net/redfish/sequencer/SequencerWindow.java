@@ -678,9 +678,11 @@ System.err.println(inException);
 	// PUBLIC METHODS
 
 	public int
-	getRandomInt()
+	getRandomPositiveInt(int inLimit)
 	{
-		return this.random.nextInt();
+		int	number = this.random.nextInt();
+
+		return Math.abs(number) % inLimit;
 	}
 
 	public void

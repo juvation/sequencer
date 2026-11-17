@@ -34,12 +34,58 @@ public class Step
 		return noteOptions.get(inOptionNumber);
 	}
 
+	public boolean
+	selectBoolean(int inProbability)
+	{
+		boolean	selected = false;
+
+		if (inProbability == 0)
+		{
+			selected = false;
+		}
+		else if (inProbability == 100)
+		{
+			selected = true;
+		}
+		else
+		{
+			if (SequencerWindow.getInstance().getRandomPositiveInt(100) < inProbability)
+			{
+				selected = true;
+			}
+		}
+
+		return selected;
+	}
+
+	public int
+	selectInt(int inLower, int inUpper)
+	{
+		int	value = 0;
+
+		if (inLower == inUpper)
+		{
+			value = inLower;
+		}
+		else
+		{
+			int	range = inUpper - inLower;
+			range = Math.abs(range);
+			range++;
+
+			int	roll = SequencerWindow.getInstance().getRandomPositiveInt(range);
+			value = inLower + roll;
+		}
+
+		return value;
+	}
+
 	public void
 	selectOption()
 	{
 		this.selectedOption = null;
 
-		int	roll = SequencerWindow.getInstance().getRandomInt();
+		int	roll = SequencerWindow.getInstance().getRandomPositiveInt(100);
 		int	target = 0;
 
 		for (Option option : this.noteOptions)
@@ -60,23 +106,22 @@ public class Step
 
 		// TODO determine the option probability options
 
-/*
-		mSelectedOption->mMute = Utility::SelectProbability(mSelectedOption->mMuteProbability);
-		mSelectedOption->mTie = Utility::SelectProbability(mSelectedOption->mTieProbability);
-		
-		mSelectedOption->mGateTime = Utility::SelectValue<int8_t>
-			(mSelectedOption->mGateTimeLower, mSelectedOption->mGateTimeUpper);
-		
-		mSelectedOption->mNote = Utility::SelectValue<uint8_t>
-			(mSelectedOption->mNoteLower, mSelectedOption->mNoteUpper);
-		
-		mSelectedOption->mVelocity = Utility::SelectValue<uint8_t>
-			(mSelectedOption->mVelocityLower, mSelectedOption->mVelocityUpper);
+
+		this.selectedOption.note = selectInt
+			(this.selectedOption.noteLower, this.selectedOption.noteUpper);
+
+		this.selectedOption.velocity = selectInt
+			(this.selectedOption.velocityLower, this.selectedOption.velocityUpper);
+
+		this.selectedOption.gateTime = selectInt
+			(this.selectedOption.gateTimeLower, this.selectedOption.gateTimeUpper);
+
+		this.selectedOption.mute = selectBoolean(this.selectedOption.muteProbability);
+		this.selectedOption.tie = selectBoolean(this.selectedOption.tieProbability);
 		
 		// wait, this way we only have one type of ratchet
 		// unless there is a ratchet granularity property
-		mSelectedOption->mRatchet = Utility::SelectProbability(mSelectedOption->mRatchetProbability);
-*/
+		this.selectedOption.ratchet = selectBoolean(this.selectedOption.ratchetProbability);
 
 	}
 
