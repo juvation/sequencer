@@ -1,0 +1,124 @@
+<project
+	name="Red Fish Sequencer"
+	default="build"
+	basedir="."
+	>
+
+	<property name="build.dir"  value="build"/>
+	
+	<property name="classes.dir"  value="${build.dir}/classes"/>
+	<property name="lib.dir"  value="lib"/>
+	<property name="source.dir"  value="src"/>
+
+	<target
+		name="build"
+		depends="jar"
+		>
+	</target>
+	
+	<target
+		name="clean"
+		>
+		<delete
+			dir="${classes.dir}"
+		/>
+		<delete
+			file="sequencer.jar"
+		/>
+	</target>
+
+	<target
+		name="init"
+		depends="clean"
+		>
+		<mkdir
+			dir="${build.dir}"
+		/>
+		<mkdir
+			dir="${classes.dir}"
+		/>
+		<mkdir
+			dir="${classes.dir}/META-INF"
+		/>
+	</target>
+
+	<target
+		name="libext"
+		>
+	</target>
+
+	<target
+		name="compile"
+		depends="init"
+		>
+		
+		<javac
+			srcdir="${source.dir}"
+			destdir="${classes.dir}"
+			classpath="${classes.dir}:${lib.dir}/coremidi4j-1.6.jar"
+			debug="on"
+			source="1.8"
+			target="1.8"
+			deprecation="on"
+			includeantruntime="false"
+			>
+		</javac>
+
+	</target>
+
+	<target
+		name="jar"
+		depends="compile"
+		>
+		
+		<!-- graphics
+
+		<copy todir="${classes.dir}">
+			<fileset dir="images">
+				<include name="*" />
+			</fileset>
+		</copy>
+
+		-->
+
+		<jar destfile="sequencer.jar">
+			<fileset dir="${classes.dir}" />
+			<manifest>
+				<attribute name="Main-Class" value="net.redfish.SequencerWindow" />
+				<attribute name="Class-Path" value="coremidi4j-1.6.jar" />
+				<attribute name="Application-Name" value="Red Fish Sequencer" />
+			</manifest>
+		</jar>
+		
+	</target>
+
+	<target name="javadoc">
+		<mkdir
+			dir="javadoc"
+		/>
+		<javadoc
+			destdir="javadoc"
+			author="true"
+			version="true"
+			use="true"
+			windowtitle="Red Fish Sequencer JavaDoc"
+			>
+ 			<classpath
+				refid="project.classpath"
+			/>
+			<packageset
+				dir="${source.dir}"
+				defaultexcludes="yes"
+				>
+				<include
+					name="net/redfish/**"
+				/>
+			</packageset>
+
+			<doctitle><![CDATA[<h1><font face="Arial"><b>Red Fish Sequencer JavaDoc</b></font></h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; 2026 Jason Proctor</i>]]></bottom>
+			<tag name="todo" scope="all" description="To do:" />
+		</javadoc>
+  </target>
+</project>
+
