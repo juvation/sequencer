@@ -93,6 +93,20 @@ public class OptionWindow
 		}
 	}
 	
+	// COMPONENT OVERRIDE
+	
+	@Override
+	public void
+	setVisible(boolean inVisible)
+	{
+		if (inVisible)
+		{
+			SequencerWindow.getInstance().removeOptionWindow(this.option);
+		}
+
+		super.setVisible(inVisible);
+	}
+
 	// MOUSE LISTENER IMPLEMENTATION
 
 	@Override

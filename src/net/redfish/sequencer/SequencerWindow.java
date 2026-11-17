@@ -231,7 +231,8 @@ public class SequencerWindow
 	public 
 	SequencerWindow()
 	{
-		
+		this.sequence = new Sequence(16, 2);
+
 		// CONFIGURATION
 		
 		setTitle("Sequence");
@@ -309,7 +310,7 @@ public class SequencerWindow
 
 			for (int optionNumber = 0; optionNumber < kTableRowCount; optionNumber++)
 			{
-				Option	option = step.getOption(stepNumber);
+				Option	option = step.getOption(optionNumber);
 
 				this.table.setValueAt(option, optionNumber, stepNumber);
 			}
@@ -354,6 +355,7 @@ public class SequencerWindow
 
 	// COMPONENT OVERRIDE
 	
+	@Override
 	public void
 	setVisible(boolean inVisible)
 	{
@@ -402,9 +404,7 @@ public class SequencerWindow
 			
 			if (closeWindow)
 			{
-				super.setVisible(false);
-				
-				// do NOT dispose() here
+				System.exit(0);
 			}
 		}
 	}
@@ -633,8 +633,8 @@ System.err.println(inException);
 	{
 		if (inEvent.getClickCount() == 2)
 		{
-			int stepNumber = this.table.rowAtPoint(inEvent.getPoint());
-			int optionNumber = this.table.columnAtPoint(inEvent.getPoint());
+			int stepNumber = this.table.columnAtPoint(inEvent.getPoint());
+			int optionNumber = this.table.rowAtPoint(inEvent.getPoint());
 
 			if (stepNumber != -1 && optionNumber != -1)
 			{
@@ -676,6 +676,12 @@ System.err.println(inException);
 	}
 
 	// PUBLIC METHODS
+
+	public void
+	removeOptionWindow(Option inOption)
+	{
+		this.optionWindows.remove(inOption);
+	}
 
 	public int
 	getRandomPositiveInt(int inLimit)
@@ -855,7 +861,7 @@ System.err.println(inException);
 	random = new Random();
 
 	private Sequence
-	sequence = new Sequence();
+	sequence;
 
 	// INNER CLASSES
 	

@@ -14,10 +14,16 @@ public class Step
 {
 	// PUBLIC CONSTRUCTOR
 
-	public Step()
+	public Step(int inOptionCount)
 	{
 		this.selectedOption = null;
-		this.noteOptions = new ArrayList<Option>(2);
+
+		this.noteOptions = new ArrayList<Option>();
+
+		for (int i = 0; i < inOptionCount; i++)
+		{
+			this.noteOptions.add(new Option());
+		}
 	}
 
 	// PUBLIC METHODS

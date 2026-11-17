@@ -15,9 +15,14 @@ public class Sequence
 
 	// PUBLIC CONSTRUCTOR
 	
-	public Sequence()
+	public Sequence(int inStepCount, int inOptionCount)
 	{
-		this.steps = new ArrayList<Step>(16);
+		this.steps = new ArrayList<Step>();
+
+		for (int i = 0; i < inStepCount; i++)
+		{
+			this.steps.add(new Step(inOptionCount));
+		}
 	}
 
 	// PUBLIC METHODS

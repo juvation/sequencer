@@ -84,7 +84,7 @@
 		<jar destfile="sequencer.jar">
 			<fileset dir="${classes.dir}" />
 			<manifest>
-				<attribute name="Main-Class" value="net.redfish.SequencerWindow" />
+				<attribute name="Main-Class" value="net.redfish.sequencer.SequencerWindow" />
 				<attribute name="Class-Path" value="coremidi4j-1.6.jar" />
 				<attribute name="Application-Name" value="Red Fish Sequencer" />
 			</manifest>
@@ -92,6 +92,14 @@
 		
 	</target>
 
+	<target
+		name="run"
+		depends="jar"
+		>
+		<java classname="net.redfish.sequencer.SequencerWindow" classpath="sequencer.jar" fork="true">
+    </java>
+	</target>
+	
 	<target name="javadoc">
 		<mkdir
 			dir="javadoc"
