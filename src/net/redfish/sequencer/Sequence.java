@@ -21,7 +21,7 @@ public class Sequence
 
 		for (int i = 0; i < inStepCount; i++)
 		{
-			this.steps.add(new Step(inOptionCount));
+			this.steps.add(new Step(inOptionCount, i));
 		}
 	}
 

@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Rectangle;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -18,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.SwingConstants;
 
 public class OptionCellRenderer
 	extends JComponent
@@ -28,7 +30,21 @@ public class OptionCellRenderer
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setOpaque(false);
-		
+
+		// have to set bounds to get horiz alignment to work
+		Rectangle	bounds = getBounds();
+
+		System.out.println("bounds are " + bounds);
+
+		bounds.width = 100;
+		bounds.height = 18;
+
+		this.probabilityLabel = new JLabel();
+		this.probabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 18));
+		this.probabilityLabel.setBounds(bounds);
+		this.probabilityLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		add(this.probabilityLabel);
+
 		this.noteLabel = new JLabel();
 		this.noteLabel.setFont(new Font("Sans Serif", Font.BOLD, 18));
 		add(this.noteLabel);
@@ -96,6 +112,9 @@ public class OptionCellRenderer
 			{
 				setBorder(null);
 			}
+
+			this.probabilityLabel.setText
+				("" + option.probability + "%");
 			
 			this.noteLabel.setText
 				(getNoteString(option.noteLower) + "-" + getNoteString(option.noteUpper));
@@ -184,6 +203,9 @@ public class OptionCellRenderer
 	
 	private JLabel
 	noteLabel = null;
+
+	private JLabel
+	probabilityLabel = null;
 
 	private JLabel
 	ratchetProbabilityLabel = null;

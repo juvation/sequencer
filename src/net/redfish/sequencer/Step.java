@@ -14,15 +14,16 @@ public class Step
 {
 	// PUBLIC CONSTRUCTOR
 
-	public Step(int inOptionCount)
+	public Step(int inOptionCount, int inStepNumber)
 	{
 		this.selectedOption = null;
+		this.stepNumber = inStepNumber;
 
 		this.noteOptions = new ArrayList<Option>();
 
 		for (int i = 0; i < inOptionCount; i++)
 		{
-			this.noteOptions.add(new Option());
+			this.noteOptions.add(new Option(inStepNumber, i));
 		}
 	}
 
@@ -134,6 +135,9 @@ public class Step
 	
 	// PRIVATE DATA
 	
+	private int
+	stepNumber;
+
 	private Option
 	selectedOption;
 

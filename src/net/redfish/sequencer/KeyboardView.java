@@ -141,8 +141,6 @@ public class KeyboardView
 			inGraphics.drawRect(key * keyWidth, 0, keyWidth, bounds.height - 1);
 		}
 		
-		List<Rectangle>	blackRectangles = new ArrayList<Rectangle>();
-		
 		// for each octave
 		int	numOctaves = numWhiteKeys / 7;
 		
@@ -155,7 +153,7 @@ public class KeyboardView
 			
 			for (int j = 0; j < this.blackKeyIndexes.length; j++)
 			{
-				int	x = octaveBase + ((blackKeyIndexes [j] + 1) * keyWidth) -(keyWidth / 4);
+				int	x = octaveBase + ((blackKeyIndexes [j] + 1) * keyWidth) - (keyWidth / 4);
 				
 				Rectangle	blackKey = new Rectangle(x, 0, keyWidth / 2, (bounds.height * 2) / 3);
 				

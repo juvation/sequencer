@@ -10,35 +10,68 @@ package net.redfish.sequencer;
 
 public class Option
 {
-	public Option()
+	public Option(int inStepNumber, int inOptionNumber)
 	{
+		this.stepNumber = inStepNumber;
+		this.optionNumber = inOptionNumber;
 	}
 
 	// PUBLIC DATA
+
+	public int
+	stepNumber;
+
+	public int
+	optionNumber;
 	
-	public int			probability = 100;
+	public int
+	probability = 100;
 
-	public int			note = 60;
-	public int			noteLower = 60;
-	public int			noteUpper = 60;
+	public int
+	note = 60;
 
-	public int			velocity = 100;
-	public int			velocityLower = 100;
-	public int			velocityUpper = 100;
+	public int
+	noteLower = 60;
+
+	public int
+	noteUpper = 60;
+
+	public int
+	velocity = 100;
+
+	public int
+	velocityLower = 100;
+
+	public int
+	velocityUpper = 100;
 
 	// percent of step length
-	public int			gateTime = 50;
-	public int			gateTimeLower = 50;
-	public int			gateTimeUpper = 50;
+	public int
+	gateTime = 50;
 
-	public boolean	ratchet = false;
-	public int			ratchetProbability = 0;
+	public int
+	gateTimeLower = 50;
+
+	public int
+	gateTimeUpper = 50;
+
+	public boolean
+	ratchet = false;
+
+	public int
+	ratchetProbability = 0;
 	
-	public boolean	mute = false;
-	public int			muteProbability = 0;
+	public boolean
+	mute = false;
 
-	public boolean	tie = false;
-	public int			tieProbability = 0;
+	public int
+	muteProbability = 0;
+
+	public boolean
+	tie = false;
+
+	public int
+	tieProbability = 0;
 	
 }
 
