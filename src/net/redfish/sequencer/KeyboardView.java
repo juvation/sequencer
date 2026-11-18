@@ -52,6 +52,12 @@ public class KeyboardView
 		return new Dimension(100, 200);
 	}
 
+	public Dimension
+	getMaximumSize()
+	{
+		return new Dimension(600, 200);
+	}
+
 	@Override
 	public void
 	paintComponent(Graphics inGraphics)
