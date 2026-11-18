@@ -117,7 +117,7 @@ public class OptionCellRenderer
 				("" + option.probability + "%");
 			
 			this.noteLabel.setText
-				(getNoteString(option.noteLower) + "-" + getNoteString(option.noteUpper));
+				(SequencerWindow.getNoteString(option.noteLower) + "-" + SequencerWindow.getNoteString(option.noteUpper));
 
 			this.velocityLabel.setText
 				("V: " + option.velocityLower + "-" + option.velocityUpper);
@@ -171,25 +171,6 @@ public class OptionCellRenderer
 	}
 	*/
 	
-	// PRIVATE METHODS
-
-	// ASSUME C4 = 60
-	// TODO Roland vs Yamaha, LFS
-	private String
-	getNoteString(int inNote)
-	{
-		int	note = inNote % 12;
-		int	octave = (inNote / 12) - 1;
-
-		return "" + kNoteStrings[note] + octave;
-		
-	}
-
-	// PRIVATE STATIC FINAL DATA
-
-	private static final
-	String[] kNoteStrings = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-
 	// PRIVATE DATA
 	
 	private Border

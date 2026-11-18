@@ -109,7 +109,7 @@ public class OptionWindow
 			lowerOctavePanel.add(this.lowerOctaveLabel);
 			
 			JButton	lowerOctaveUpButton = new JButton("Octave Up");
-			lowerOctaveUpButton.setActionCommand("OCTAVE_UP");
+			lowerOctaveUpButton.setActionCommand("LOWER_OCTAVE_UP");
 			lowerOctaveUpButton.addActionListener(this);
 			lowerOctavePanel.add(lowerOctaveUpButton);
 	
@@ -129,7 +129,7 @@ public class OptionWindow
 	{
 		if (!inVisible)
 		{
-			SequencerWindow.getInstance().removeOptionWindow(this.option);
+			// SequencerWindow.getInstance().removeOptionWindow(this.option);
 		}
 
 		super.setVisible(inVisible);

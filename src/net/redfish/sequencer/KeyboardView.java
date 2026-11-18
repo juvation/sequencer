@@ -7,6 +7,9 @@ package net.redfish.sequencer;
 // IMPORTS
 
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -33,11 +36,23 @@ public class KeyboardView
 
 		setLayout(null);
 		
+		// for key labels
+		setFont(new Font("Sans Serif", Font.BOLD, 12));
+
 		addMouseListener(this);
 	}
 	
 	// COMPONENT INTERFACE
 	
+	// otherwise it won't show up in any managed layout, LFS
+	// note the width is ignored in a width-managed layout
+	public Dimension
+	getPreferredSize()
+	{
+		return new Dimension(100, 200);
+	}
+
+	@Override
 	public void
 	paintComponent(Graphics inGraphics)
 	{
@@ -47,6 +62,7 @@ public class KeyboardView
 	
 	// MOUSEINPUTLISTENER INTERFACE
 	
+	@Override
 	public void
 	mouseClicked(MouseEvent inEvent)
 	{
@@ -115,6 +131,15 @@ public class KeyboardView
 		return ok;
 	}
 	
+	public void
+	setOption(int inStepNumber, int inOptionNumber)
+	{
+		System.out.println("KeyboardView.setOption() to step " + inStepNumber + " option " + inOptionNumber);
+
+		this.stepNumber = inStepNumber;
+		this.optionNumber = inOptionNumber;
+	}
+
 	// PRIVATE METHODS
 	
 	private void
@@ -130,17 +155,84 @@ public class KeyboardView
 			this.numWhiteKeys = (octave * 7) + 1;
 			keyWidth = bounds.width / this.numWhiteKeys;
 			
-			if (keyWidth < 40)
+			if (keyWidth < 50)
 			{
 				break;
 			}
 		}
 
-		for(int key = 0; key < numWhiteKeys; key++)
+		FontMetrics	metrics = inGraphics.getFontMetrics();
+
+		for (int key = 0; key < numWhiteKeys; key++)
 		{
 			inGraphics.drawRect(key * keyWidth, 0, keyWidth, bounds.height - 1);
+
+			// label the key
+			// note we have a white key number, not a MIDI note
+			// so hack one into the other
+
+			// we could do this with key / 7 * 12
+			// but it falls over mapping D# to F!
+			int	note = 0;
+
+			switch (key % 7)
+			{
+				// C
+				case 0:
+					note = 0;
+					break;
+
+				// D
+				case 1:
+					// map C# to D
+					note = 2;
+					break;
+
+				// E
+				case 2:
+					// map D to E
+					note = 4;
+					break;
+
+				// F
+				case 3:
+					// map D# to F
+					note = 5;
+					break;
+				
+				// G
+				case 4:
+					// map E to G
+					note = 7;
+					break;
+	
+				// A
+				case 5:
+					// map F to A
+					note = 9;
+					break;
+				
+				// B
+				case 6:
+					// map F# to B
+					note = 11;
+					break;
+
+				default:
+					System.out.println("oi, unrecognised key " + key);
+					break;
+			}
+
+			// now map the octaves
+			note += (key / 7) * 12;
+
+			int			noteNumber = this.octaveOffset + note;
+			String	noteString = SequencerWindow.getNoteString(noteNumber);
+			int			noteStringWidth = metrics.stringWidth(noteString);
+
+			inGraphics.drawString(noteString, key * keyWidth + ((keyWidth / 2) - (noteStringWidth / 2)), bounds.height - 20);
 		}
-		
+
 		// for each octave
 		int	numOctaves = numWhiteKeys / 7;
 		

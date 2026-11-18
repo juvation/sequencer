@@ -203,7 +203,18 @@ public class SequencerWindow
 		
 		return selectedFile;
 	}
-	
+
+	// ASSUME C4 = 60
+	// TODO Roland vs Yamaha, LFS
+	static public String
+	getNoteString(int inNote)
+	{
+		int	note = inNote % 12;
+		int	octave = (inNote / 12) - 1;
+
+		return "" + kNoteStrings[note] + octave;
+	}
+
 	public static int
 	showConfirmDialog(String inTitle, String inMessage)
 	{
@@ -237,7 +248,7 @@ public class SequencerWindow
 		
 		setTitle("AssQuencer");
 
-		setResizable(false);
+		setResizable(true);
 
 		// LAYOUT
 
@@ -254,8 +265,16 @@ public class SequencerWindow
 		this.statusLabel = new JLabel();
 		statusPanel.add(this.statusLabel);
 		
-		// MAIN PANE - TABLE
+		// MAIN PANE - SEQUENCER VIEW
 		
+		JPanel	sequencerPanel = new JPanel();
+		sequencerPanel.setLayout(new BoxLayout(sequencerPanel, BoxLayout.Y_AXIS));
+		getContentPane().add(sequencerPanel, BorderLayout.CENTER);
+
+		// TODO active step view
+
+		// sequencer view
+
 		this.table = new JTable(kTableRowCount, kTableColumnCount)
 		{
 			public Dimension
@@ -285,14 +304,8 @@ public class SequencerWindow
 		selectionModel = this.table.getColumnModel().getSelectionModel();
 		selectionModel.addListSelectionListener(this);
 		
-		// override enter key
-		
-		KeyStroke	enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-		
-		this.table.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, "OPEN_OPTION");
-		this.table.getActionMap().put("OPEN_OPTION", new EnterAction());
-
 		// add copy/paste actions
+
 		Toolkit	toolkit = Toolkit.getDefaultToolkit();
 		KeyStroke copyKey = KeyStroke.getKeyStroke
 			(KeyEvent.VK_C, toolkit.getMenuShortcutKeyMask(), false);
@@ -303,10 +316,12 @@ public class SequencerWindow
 		this.table.registerKeyboardAction
 			(this, "PASTE", pasteKey, JComponent.WHEN_FOCUSED);
 
+		// add a scroller around the sequencer panel
 		JScrollPane	scrollPane = new JScrollPane(this.table);
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		sequencerPanel.add(scrollPane);
 
 		// set the cell contents
+
 		for (int stepNumber = 0; stepNumber < kTableColumnCount; stepNumber++)
 		{
 			Step	step = this.sequence.getStep(stepNumber);
@@ -323,7 +338,66 @@ public class SequencerWindow
 		packColumns(2);
 		packRows(2);
 
-		// toolbar
+		// OPTION PANEL
+
+		JPanel	optionPanel = new JPanel();
+		optionPanel.setLayout(new BoxLayout(optionPanel, BoxLayout.X_AXIS));
+		sequencerPanel.add(optionPanel);
+
+		// lower keyboard panel
+
+		JPanel	lowerKeyboardPanel = new JPanel();
+		lowerKeyboardPanel.setLayout(new BoxLayout(lowerKeyboardPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(lowerKeyboardPanel);	
+
+		this.lowerKeyboardView = new KeyboardView(false, 0, 0);
+		lowerKeyboardPanel.add(this.lowerKeyboardView);
+
+		JPanel	lowerOctavePanel = new JPanel();
+		lowerOctavePanel.setLayout(new BoxLayout(lowerOctavePanel, BoxLayout.X_AXIS));
+		lowerKeyboardPanel.add(lowerOctavePanel);
+		
+		JButton	lowerOctaveDownButton = new JButton("Octave Down");
+		lowerOctaveDownButton.setActionCommand("LOWER_OCTAVE_DOWN");
+		lowerOctaveDownButton.addActionListener(this);
+		lowerOctavePanel.add(lowerOctaveDownButton);
+		
+		this.lowerOctaveLabel = new JLabel("0");
+		lowerOctavePanel.add(this.lowerOctaveLabel);
+		
+		JButton	lowerOctaveUpButton = new JButton("Octave Up");
+		lowerOctaveUpButton.setActionCommand("LOWER_OCTAVE_UP");
+		lowerOctaveUpButton.addActionListener(this);
+		lowerOctavePanel.add(lowerOctaveUpButton);
+
+		// upper keyboard panel
+		
+		JPanel	upperKeyboardPanel = new JPanel();
+		upperKeyboardPanel.setLayout(new BoxLayout(upperKeyboardPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(upperKeyboardPanel);	
+		
+		this.upperKeyboardView = new KeyboardView(true, 0, 0);
+		upperKeyboardPanel.add(this.upperKeyboardView);
+
+		JPanel	upperOctavePanel = new JPanel();
+		upperOctavePanel.setLayout(new BoxLayout(upperOctavePanel, BoxLayout.X_AXIS));
+		upperKeyboardPanel.add(upperOctavePanel);
+		
+		JButton	upperOctaveDownButton = new JButton("Octave Down");
+		upperOctaveDownButton.setActionCommand("UPPER_OCTAVE_DOWN");
+		upperOctaveDownButton.addActionListener(this);
+		upperOctavePanel.add(upperOctaveDownButton);
+		
+		this.upperOctaveLabel = new JLabel("0");
+		upperOctavePanel.add(this.upperOctaveLabel);
+		
+		JButton	upperOctaveUpButton = new JButton("Octave Up");
+		upperOctaveUpButton.setActionCommand("UPPER_OCTAVE_UP");
+		upperOctaveUpButton.addActionListener(this);
+		upperOctavePanel.add(upperOctaveUpButton);
+
+		// TOOLBAR
+
 		JPanel	buttonBar = new JPanel();
 		buttonBar.setLayout(new FlowLayout(FlowLayout.CENTER));
 		getContentPane().add(buttonBar, BorderLayout.SOUTH);
@@ -474,6 +548,66 @@ public class SequencerWindow
 			
 			saveSequence(askForFile);
 		}
+		else
+		if (actionCommand.equalsIgnoreCase("LOWER_OCTAVE_DOWN"))
+		{
+			int	octaveOffset = this.lowerKeyboardView.getOctaveOffset();
+			
+			octaveOffset--;
+			
+			if (this.lowerKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.lowerOctaveLabel.setText("" + octaveOffset);
+
+				this.lowerKeyboardView.revalidate();
+				this.lowerKeyboardView.repaint();
+			}
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("LOWER_OCTAVE_UP"))
+		{
+			int	octaveOffset = this.lowerKeyboardView.getOctaveOffset();
+			
+			octaveOffset++;
+			
+			if (this.lowerKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.lowerOctaveLabel.setText("" + octaveOffset);
+
+				this.lowerKeyboardView.revalidate();
+				this.lowerKeyboardView.repaint();
+			}
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_DOWN"))
+		{
+			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
+			
+			octaveOffset--;
+			
+			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.upperOctaveLabel.setText("" + octaveOffset);
+
+				this.upperKeyboardView.revalidate();
+				this.upperKeyboardView.repaint();
+			}
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_UP"))
+		{
+			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
+			
+			octaveOffset++;
+			
+			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.upperOctaveLabel.setText("" + octaveOffset);
+
+				this.upperKeyboardView.revalidate();
+				this.upperKeyboardView.repaint();
+			}
+		}
 		/*
 		else
 		if (actionCommand.equalsIgnoreCase("COPY"))
@@ -620,16 +754,17 @@ System.err.println(inException);
 			return;
 		}
 
-		int	row = this.table.getSelectedRow ();
-		int	column = this.table.getSelectedColumn ();
+		int	stepNumber = this.table.getSelectedColumn ();
+		int	optionNumber = this.table.getSelectedRow ();
 		
-		if (row >= 0 && column >= 0)
+		if (stepNumber >= 0 && optionNumber >= 0)
 		{
-			// we may want to update a singleton OptionWindow here
-		}
-		else
-		{
-			System.err.println ("selection event with no selection?!?");
+			// update the option view here
+
+			System.out.println("ListSelectionListener.valueChanged() to step " + stepNumber + " option " + optionNumber);
+
+			this.lowerKeyboardView.setOption(stepNumber, optionNumber);
+			this.upperKeyboardView.setOption(stepNumber, optionNumber);
 		}
 	}
 	
@@ -639,32 +774,6 @@ System.err.println(inException);
 	public void
 	mouseClicked(MouseEvent inEvent)
 	{
-		if (inEvent.getClickCount() == 2)
-		{
-			int stepNumber = this.table.columnAtPoint(inEvent.getPoint());
-			int optionNumber = this.table.rowAtPoint(inEvent.getPoint());
-
-			if (stepNumber != -1 && optionNumber != -1)
-			{
-				Step					step = this.sequence.getStep(stepNumber);
-				Option				option = step.getOption(optionNumber);
-
-				OptionWindow	optionWindow = this.optionWindows.get(option);
-
-				if (optionWindow == null)
-				{
-					optionWindow = new OptionWindow(stepNumber, optionNumber);
-					optionWindow.setSize (300, 200);
-					optionWindow.setLocationRelativeTo(null);
-					optionWindow.setVisible(true);
-
-					this.optionWindows.put(option, optionWindow);
-				}
-
-				optionWindow.toFront();
-				optionWindow.requestFocus();
-			}
-		}
 	}
 
 	public void
@@ -706,12 +815,6 @@ System.err.println(inException);
 	}
 
 	public void
-	removeOptionWindow(Option inOption)
-	{
-		this.optionWindows.remove(inOption);
-	}
-
-	public void
 	setSequenceModified(boolean inModified)
 	{
 		getRootPane().putClientProperty("windowModified", new Boolean(inModified));
@@ -744,17 +847,17 @@ System.err.println(inException);
 	public void
 	setOptionNoteLower(int inStepNumber, int inOptionNumber, int inNoteLower)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.noteLower = inNoteLower;
-
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.noteLower = Math.min(option.noteUpper, inNoteLower);
+	
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
 	public void
 	setOptionNoteUpper(int inStepNumber, int inOptionNumber, int inNoteUpper)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.noteUpper = inNoteUpper;
+			option.noteUpper = Math.max(option.noteLower, inNoteUpper);
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
@@ -824,6 +927,12 @@ System.err.println(inException);
 			{
 				this.file = tempFile;
 			}
+			else
+			{
+				// otherwise we save to the original file
+				// having selected "Save as..."
+				return false;
+			}
 		}
 		
 		if (this.file != null)
@@ -862,6 +971,9 @@ System.err.println(inException);
 	
 	// STATIC PRIVATE FINAL DATA
 	
+	private static final
+	String[] kNoteStrings = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+	
 	private static final String
 	kPreferencesPath = "net/redfish/sequencer";
 	
@@ -884,39 +996,29 @@ System.err.println(inException);
 	private File
 	file = null;
 	
-	private HashMap<Option, OptionWindow>
-	optionWindows = new HashMap<Option, OptionWindow>();
-
 	private JLabel
 	statusLabel = null;
 	
 	private JTable
 	table = null;
 	
+	private KeyboardView
+	lowerKeyboardView = null;
+
+	private JLabel
+	lowerOctaveLabel = null;
+
+	private KeyboardView
+	upperKeyboardView = null;
+
+	private JLabel
+	upperOctaveLabel = null;
+
 	private Random
 	random = new Random();
 
 	private Sequence
 	sequence;
-
-	// INNER CLASSES
-	
-	class EnterAction
-	extends AbstractAction
-	{
-		@Override
-		public void
-		actionPerformed(ActionEvent inEvent)
-		{
-			int	stepNumber = SequencerWindow.this.table.getSelectedColumn();
-			int	optionNumber = SequencerWindow.this.table.getSelectedRow();
-			
-			if (stepNumber >= 0 && optionNumber >= 0)
-			{
-				System.err.println("HEY! EnterAction.actionPerformed() stubbed");
-			}
-    }		
-	}
 
 	// PRIVATE DATA
 
