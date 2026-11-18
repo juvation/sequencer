@@ -24,18 +24,38 @@ public class OptionCellRenderer
 	implements TableCellRenderer
 {
 	public
-	OptionCellRenderer ()
+	OptionCellRenderer()
 	{
-		setLayout (new BoxLayout (this, BoxLayout.Y_AXIS));
-		setOpaque (false);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setOpaque(false);
 		
-		this.noteLabel = new JLabel ();
-		this.noteLabel.setFont (new Font ("Sans Serif", Font.BOLD, 12));
-		add (this.noteLabel);
+		this.noteLabel = new JLabel();
+		this.noteLabel.setFont(new Font("Sans Serif", Font.BOLD, 18));
+		add(this.noteLabel);
 		
+		this.velocityLabel = new JLabel();
+		this.velocityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		add(this.velocityLabel);
+
+		this.gateTimeLabel = new JLabel();
+		this.gateTimeLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		add(this.gateTimeLabel);
+
+		this.muteProbabilityLabel = new JLabel();
+		this.muteProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		add(this.muteProbabilityLabel);
+
+		this.tieProbabilityLabel = new JLabel();
+		this.tieProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		add(this.tieProbabilityLabel);
+
+		this.ratchetProbabilityLabel = new JLabel();
+		this.ratchetProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		add(this.ratchetProbabilityLabel);
+
 		// inverted selections plain don't work
 		// so resort to borders :-|
-		this.border = BorderFactory.createLineBorder (Color.black, 1);
+		this.border = BorderFactory.createLineBorder(Color.black, 1);
 	}
 	
 	// COMPONENT OVERRIDE
@@ -44,29 +64,13 @@ public class OptionCellRenderer
 	// delegating to Component gets it wrong
 	// could just hardcode to 100, but it might be wrong on Windows etc
 	public Dimension
-	getPreferredSize ()
+	getPreferredSize()
 	{
-		Dimension	size = super.getPreferredSize ();
+		Dimension	size = super.getPreferredSize();
 
 		// leave the height alone
 		
-		// calculate the width based on our labels
-		int	width = 0;
-
-/*		
-		if (this.filterLabel != null)
-		{
-			width = Math.max (width, this.filterLabel.getPreferredSize ().width);
-		}
-		
-		width = Math.max (width, this.titleLabel.getPreferredSize ().width);
-		width = Math.max (width, this.waveALabel.getPreferredSize ().width);
-		width = Math.max (width, this.waveBLabel.getPreferredSize ().width);
-		width = Math.max (width, this.waveCLabel.getPreferredSize ().width);
-		width = Math.max (width, this.waveDLabel.getPreferredSize ().width);
-*/
-
-		size.setSize (width, size.height);
+		size.setSize(100, size.height);
 		
 		return size;
 	}
@@ -77,34 +81,50 @@ public class OptionCellRenderer
 	getTableCellRendererComponent(JTable inTable, Object inValue,
 		boolean inIsSelected, boolean inHasFocus, int inRow, int inColumn)
 	{
-		Option	option = (Option) inValue;
+		Option	option =(Option) inValue;
 
 		try
 		{
-// System.err.println ("cell row=" + inRow + " col=" + inColumn);
-// System.err.println ("selected=" + inIsSelected + " hasfocus=" + inHasFocus);
+// System.err.println("cell row=" + inRow + " col=" + inColumn);
+// System.err.println("selected=" + inIsSelected + " hasfocus=" + inHasFocus);
 
 			if (inIsSelected)
 			{
-				setBorder (this.border);
+				setBorder(this.border);
 			}
 			else
 			{
-				setBorder (null);
+				setBorder(null);
 			}
 			
-			this.noteLabel.setText ("HEY");
+			this.noteLabel.setText
+				(getNoteString(option.noteLower) + "-" + getNoteString(option.noteUpper));
+
+			this.velocityLabel.setText
+				("V: " + option.velocityLower + "-" + option.velocityUpper);
+
+			this.gateTimeLabel.setText
+				("G: " + option.gateTimeLower + "-" + option.gateTimeUpper);
+
+			this.muteProbabilityLabel.setText
+				("Mute: " + option.muteProbability + "%");
+
+			this.tieProbabilityLabel.setText
+				("Tie: " + option.tieProbability + "%");
+
+			this.ratchetProbabilityLabel.setText
+				("Ratchet: " + option.ratchetProbability + "%");
 		}
-		catch (Exception inException)
+		catch(Exception inException)
 		{
-			System.err.println (inException);
+			System.err.println(inException);
 		}
 		
 		return this;
 	}
 	
 	public void
-	setValue (Object inValue)
+	setValue(Object inValue)
 	{
 	}
 	
@@ -112,32 +132,66 @@ public class OptionCellRenderer
 
 	/*
 	protected void
-	firePropertyChange (String inPropertyName, Object inOldValue, Object inNewValue)
+	firePropertyChange(String inPropertyName, Object inOldValue, Object inNewValue)
 	{
 	}
 	
 	public void
-	firePropertyChange (String inPropertyName, boolean inOldValue, boolean inNewValue)
+	firePropertyChange(String inPropertyName, boolean inOldValue, boolean inNewValue)
 	{
 	}
 	
 	public void
-	revalidate ()
+	revalidate()
 	{
 	}
 	
 	public void
-	validate ()
+	validate()
 	{
 	}
 	*/
 	
+	// PRIVATE METHODS
+
+	// ASSUME C4 = 60
+	// TODO Roland vs Yamaha, LFS
+	private String
+	getNoteString(int inNote)
+	{
+		int	note = inNote % 12;
+		int	octave = (inNote / 12) - 1;
+
+		return "" + kNoteStrings[note] + octave;
+		
+	}
+
+	// PRIVATE STATIC FINAL DATA
+
+	private static final
+	String[] kNoteStrings = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+
 	// PRIVATE DATA
 	
 	private Border
 	border = null;
 	
 	private JLabel
+	gateTimeLabel = null;
+
+	private JLabel
+	muteProbabilityLabel = null;
+	
+	private JLabel
 	noteLabel = null;
+
+	private JLabel
+	ratchetProbabilityLabel = null;
+
+	private JLabel
+	tieProbabilityLabel = null;
+
+	private JLabel
+	velocityLabel = null;
 
 }

@@ -235,7 +235,9 @@ public class SequencerWindow
 
 		// CONFIGURATION
 		
-		setTitle("Sequence");
+		setTitle("AssQuencer");
+
+		setResizable(false);
 
 		// LAYOUT
 
@@ -272,6 +274,7 @@ public class SequencerWindow
 		this.table.addMouseListener(this);
 		this.table.setCellSelectionEnabled(true);
 		this.table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		this.table.setDefaultEditor(Object.class, null);
 		this.table.setDefaultRenderer(Object.class, new OptionCellRenderer());
 		this.table.setTableHeader(null);
 		this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -370,16 +373,6 @@ public class SequencerWindow
 			// see if any child windows are open
 			Frame[]	frames = Frame.getFrames();
 			
-			for (int i = 0; i < frames.length; i++)
-			{
-				if (frames [i].isVisible() && frames [i] instanceof OptionWindow)
-				{
-					OptionWindow	optionWindow = (OptionWindow) frames [i];
-					
-					optionWindow.setVisible(false);
-				}
-			}
-
 			if (this.sequence.isModified())
 			{
 				StringBuffer	buffer = new StringBuffer();
@@ -619,10 +612,25 @@ System.err.println(inException);
 	// note we DO allow program changes from bank selection window changes
 	// if the bank isn't in the prophet
 	// it just becomes a handy way of selecting patches :-)
-	@Override
 	public void
 	valueChanged (ListSelectionEvent inEvent)
 	{
+		if (inEvent.getValueIsAdjusting ())
+		{
+			return;
+		}
+
+		int	row = this.table.getSelectedRow ();
+		int	column = this.table.getSelectedColumn ();
+		
+		if (row >= 0 && column >= 0)
+		{
+			// we may want to update a singleton OptionWindow here
+		}
+		else
+		{
+			System.err.println ("selection event with no selection?!?");
+		}
 	}
 	
 	// MOUSE LISTENER IMPLEMENTATION
@@ -640,17 +648,21 @@ System.err.println(inException);
 			{
 				Step					step = this.sequence.getStep(stepNumber);
 				Option				option = step.getOption(optionNumber);
+
 				OptionWindow	optionWindow = this.optionWindows.get(option);
 
 				if (optionWindow == null)
 				{
-					optionWindow = new OptionWindow(option);
+					optionWindow = new OptionWindow(stepNumber, optionNumber);
+					optionWindow.setSize (300, 200);
 					optionWindow.setLocationRelativeTo(null);
+					optionWindow.setVisible(true);
 
 					this.optionWindows.put(option, optionWindow);
 				}
 
-				optionWindow.setVisible(true);
+				optionWindow.toFront();
+				optionWindow.requestFocus();
 			}
 		}
 	}
@@ -677,10 +689,12 @@ System.err.println(inException);
 
 	// PUBLIC METHODS
 
-	public void
-	removeOptionWindow(Option inOption)
+	public Option
+	getOption(int inStepNumber, int inOptionNumber)
 	{
-		this.optionWindows.remove(inOption);
+		Step		step = this.sequence.getStep(inStepNumber);
+
+		return step.getOption(inOptionNumber);
 	}
 
 	public int
@@ -689,6 +703,12 @@ System.err.println(inException);
 		int	number = this.random.nextInt();
 
 		return Math.abs(number) % inLimit;
+	}
+
+	public void
+	removeOptionWindow(Option inOption)
+	{
+		this.optionWindows.remove(inOption);
 	}
 
 	public void
@@ -713,8 +733,7 @@ System.err.println(inException);
 		}
 		else
 		{
-			Step		step = this.sequence.getStep(stepNumber);
-			Option	option = step.getOption(optionNumber);
+			Option	option = getOption(stepNumber, optionNumber);
 
 			this.table.setValueAt(option, optionNumber, stepNumber);
 		}
@@ -722,6 +741,23 @@ System.err.println(inException);
 		setSequenceModified(true);
 	}
 
+	public void
+	setOptionNoteLower(int inStepNumber, int inOptionNumber, int inNoteLower)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.noteLower = inNoteLower;
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
+
+	public void
+	setOptionNoteUpper(int inStepNumber, int inOptionNumber, int inNoteUpper)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.noteUpper = inNoteUpper;
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
 	// PRIVATE METHODS
 	
 	private void
