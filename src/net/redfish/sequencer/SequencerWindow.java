@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -70,7 +71,7 @@ import javax.swing.UIManager;
 
 public class SequencerWindow
 	extends JFrame
-	implements ActionListener, ClipboardOwner, ListSelectionListener, MouseListener
+	implements ActionListener, ChangeListener, ClipboardOwner, ListSelectionListener, MouseListener
 {
 	// MAINLINE
 
@@ -344,6 +345,23 @@ public class SequencerWindow
 		optionPanel.setLayout(new BoxLayout(optionPanel, BoxLayout.X_AXIS));
 		sequencerPanel.add(optionPanel);
 
+		// probability panel
+
+		JPanel	probabilityPanel = new JPanel();
+		probabilityPanel.setLayout(new BoxLayout(probabilityPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(probabilityPanel);
+
+		this.probabilitySlider = new JSlider(JSlider.VERTICAL);
+		this.probabilitySlider.setMaximum(100);
+		this.probabilitySlider.setMinimum(0);
+		this.probabilitySlider.setMajorTickSpacing(10);
+		this.probabilitySlider.addChangeListener(this);
+		probabilityPanel.add(this.probabilitySlider);
+		
+		JLabel	probabilityLabel = new JLabel("Probability");
+		probabilityLabel.setLabelFor(this.probabilitySlider);
+		probabilityPanel.add(probabilityLabel);
+
 		// lower keyboard panel
 
 		JPanel	lowerKeyboardPanel = new JPanel();
@@ -428,6 +446,9 @@ public class SequencerWindow
 		buttonBar.add(swapPasteButton);
 		
 		pack();
+
+		this.table.setRowSelectionInterval(0, 0);
+		this.table.setColumnSelectionInterval(0, 0);
 	}
 
 	// COMPONENT OVERRIDE
@@ -732,6 +753,27 @@ System.err.println(inException);
 		}
 	}
 	
+	// CHANGELISTENER IMPLEMENTATION
+	
+	public void
+	stateChanged (ChangeEvent inEvent)
+	{
+		JComponent	source = (JComponent) inEvent.getSource ();
+
+		if (source == this.probabilitySlider)
+		{
+			int	value = this.probabilitySlider.getValue();
+
+			int	stepNumber = this.table.getSelectedColumn ();
+			int	optionNumber = this.table.getSelectedRow ();
+			
+			if (stepNumber >= 0 && optionNumber >= 0)
+			{
+				setOptionProbability(stepNumber, optionNumber, value);
+			}
+		}
+	}
+
 	// CLIPBOARD OWNER IMPLEMENTATION
 	
 	@Override
@@ -762,6 +804,10 @@ System.err.println(inException);
 			// update the option view here
 
 			System.out.println("ListSelectionListener.valueChanged() to step " + stepNumber + " option " + optionNumber);
+
+			Option	option = getOption(stepNumber, optionNumber);
+
+			this.probabilitySlider.setValue(option.probability);
 
 			this.lowerKeyboardView.setOption(stepNumber, optionNumber);
 			this.upperKeyboardView.setOption(stepNumber, optionNumber);
@@ -861,14 +907,23 @@ System.err.println(inException);
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
+
+	public void
+	setOptionProbability(int inStepNumber, int inOptionNumber, int inValue)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.probability = inValue;
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
+
 	// PRIVATE METHODS
 	
 	private void
 	packColumns(int inMargin)
 	{
 		TableModel	model = this.table.getModel();
-		DefaultTableColumnModel	columnModel
-			= (DefaultTableColumnModel) table.getColumnModel();
+		DefaultTableColumnModel	columnModel = (DefaultTableColumnModel) table.getColumnModel();
 			
 		for (int col = 0; col < this.table.getColumnCount(); col++)
 		{
@@ -996,6 +1051,21 @@ System.err.println(inException);
 	private File
 	file = null;
 	
+	private KeyboardView
+	lowerKeyboardView = null;
+
+	private JLabel
+	lowerOctaveLabel = null;
+
+	private JSlider
+	probabilitySlider = null;
+
+	private Random
+	random = new Random();
+
+	private Sequence
+	sequence;
+
 	private JLabel
 	statusLabel = null;
 	
@@ -1003,22 +1073,10 @@ System.err.println(inException);
 	table = null;
 	
 	private KeyboardView
-	lowerKeyboardView = null;
-
-	private JLabel
-	lowerOctaveLabel = null;
-
-	private KeyboardView
 	upperKeyboardView = null;
 
 	private JLabel
 	upperOctaveLabel = null;
-
-	private Random
-	random = new Random();
-
-	private Sequence
-	sequence;
 
 	// PRIVATE DATA
 
