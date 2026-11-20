@@ -359,9 +359,65 @@ public class SequencerWindow
 		this.probabilitySlider.addChangeListener(this);
 		probabilityPanel.add(this.probabilitySlider);
 		
-		JLabel	probabilityLabel = new JLabel("Probability");
+		JLabel	probabilityLabel = new JLabel("P%");
 		probabilityLabel.setLabelFor(this.probabilitySlider);
 		probabilityPanel.add(probabilityLabel);
+
+		// mute probability panel
+
+		JPanel	mutePanel = new JPanel();
+		mutePanel.setLayout(new BoxLayout(mutePanel, BoxLayout.Y_AXIS));
+		optionPanel.add(mutePanel);
+
+		this.muteSlider = new JSlider(JSlider.VERTICAL);
+		this.muteSlider.setMaximum(127);
+		this.muteSlider.setMinimum(0);
+		this.muteSlider.setPaintTicks(true);
+		this.muteSlider.setMajorTickSpacing(10);
+		this.muteSlider.addChangeListener(this);
+		mutePanel.add(this.muteSlider);
+
+		JLabel	muteLowerLabel = new JLabel("Mute P%");
+		muteLowerLabel.setLabelFor(this.muteSlider);
+		mutePanel.add(muteLowerLabel);
+
+		// tie probability panel
+
+		JPanel	tiePanel = new JPanel();
+		tiePanel.setLayout(new BoxLayout(tiePanel, BoxLayout.Y_AXIS));
+		optionPanel.add(tiePanel);
+
+		this.tieSlider = new JSlider(JSlider.VERTICAL);
+		this.tieSlider.setMaximum(127);
+		this.tieSlider.setMinimum(0);
+		this.tieSlider.setPaintTicks(true);
+		this.tieSlider.setMajorTickSpacing(10);
+		this.tieSlider.addChangeListener(this);
+		tiePanel.add(this.tieSlider);
+		
+		JLabel	tieLabel = new JLabel("Tie P%");
+		tieLabel.setLabelFor(this.tieSlider);
+		tiePanel.add(tieLabel);
+
+		// ratchet probability panel
+
+		JPanel	ratchetPanel = new JPanel();
+		ratchetPanel.setLayout(new BoxLayout(ratchetPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(ratchetPanel);
+
+		this.ratchetSlider = new JSlider(JSlider.VERTICAL);
+		this.ratchetSlider.setMaximum(127);
+		this.ratchetSlider.setMinimum(0);
+		this.ratchetSlider.setPaintTicks(true);
+		this.ratchetSlider.setMajorTickSpacing(10);
+		this.ratchetSlider.addChangeListener(this);
+		ratchetPanel.add(this.ratchetSlider);
+		
+		JLabel	ratchetLowerLabel = new JLabel("Rat P%");
+		ratchetLowerLabel.setLabelFor(this.ratchetSlider);
+		ratchetPanel.add(ratchetLowerLabel);
+
+		// LOWER
 
 		// lower keyboard panel
 
@@ -403,7 +459,7 @@ public class SequencerWindow
 		this.velocityLowerSlider.addChangeListener(this);
 		velocityLowerPanel.add(this.velocityLowerSlider);
 		
-		JLabel	velocityLowerLabel = new JLabel("Velocity Lower");
+		JLabel	velocityLowerLabel = new JLabel("Velocity");
 		velocityLowerLabel.setLabelFor(this.velocityLowerSlider);
 		velocityLowerPanel.add(velocityLowerLabel);
 
@@ -421,9 +477,11 @@ public class SequencerWindow
 		this.gateTimeLowerSlider.addChangeListener(this);
 		gateTimeLowerPanel.add(this.gateTimeLowerSlider);
 		
-		JLabel	gateTimeLowerLabel = new JLabel("Gate Time Lower");
+		JLabel	gateTimeLowerLabel = new JLabel("Gate");
 		gateTimeLowerLabel.setLabelFor(this.gateTimeLowerSlider);
 		gateTimeLowerPanel.add(gateTimeLowerLabel);
+
+		// UPPER
 
 		// upper keyboard panel
 		
@@ -450,6 +508,42 @@ public class SequencerWindow
 		upperOctaveUpButton.setActionCommand("UPPER_OCTAVE_UP");
 		upperOctaveUpButton.addActionListener(this);
 		upperOctavePanel.add(upperOctaveUpButton);
+
+		// velocity upper panel
+
+		JPanel	velocityUpperPanel = new JPanel();
+		velocityUpperPanel.setLayout(new BoxLayout(velocityUpperPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(velocityUpperPanel);
+
+		this.velocityUpperSlider = new JSlider(JSlider.VERTICAL);
+		this.velocityUpperSlider.setMaximum(127);
+		this.velocityUpperSlider.setMinimum(0);
+		this.velocityUpperSlider.setPaintTicks(true);
+		this.velocityUpperSlider.setMajorTickSpacing(10);
+		this.velocityUpperSlider.addChangeListener(this);
+		velocityUpperPanel.add(this.velocityUpperSlider);
+		
+		JLabel	velocityUpperLabel = new JLabel("Velocity");
+		velocityUpperLabel.setLabelFor(this.velocityUpperSlider);
+		velocityUpperPanel.add(velocityUpperLabel);
+
+		// gate time upper panel
+
+		JPanel	gateTimeUpperPanel = new JPanel();
+		gateTimeUpperPanel.setLayout(new BoxLayout(gateTimeUpperPanel, BoxLayout.Y_AXIS));
+		optionPanel.add(gateTimeUpperPanel);
+
+		this.gateTimeUpperSlider = new JSlider(JSlider.VERTICAL);
+		this.gateTimeUpperSlider.setMaximum(100);
+		this.gateTimeUpperSlider.setMinimum(0);
+		this.gateTimeUpperSlider.setPaintTicks(true);
+		this.gateTimeUpperSlider.setMajorTickSpacing(10);
+		this.gateTimeUpperSlider.addChangeListener(this);
+		gateTimeUpperPanel.add(this.gateTimeUpperSlider);
+		
+		JLabel	gateTimeUpperLabel = new JLabel("Gate");
+		gateTimeUpperLabel.setLabelFor(this.gateTimeUpperSlider);
+		gateTimeUpperPanel.add(gateTimeUpperLabel);
 
 		// TOOLBAR
 
@@ -806,33 +900,35 @@ System.err.println(inException);
 			{
 				if (source == this.gateTimeLowerSlider)
 				{
-					int	value = this.gateTimeLowerSlider.getValue();
-
-					setOptionGateTimeLower(stepNumber, optionNumber, value);
+					setOptionGateTimeLower(stepNumber, optionNumber);
 				}
 				else if (source == this.gateTimeUpperSlider)
 				{
-					int	value = this.gateTimeUpperSlider.getValue();
-
-					setOptionGateTimeUpper(stepNumber, optionNumber, value);
+					setOptionGateTimeUpper(stepNumber, optionNumber);
 				}
 				else if (source == this.probabilitySlider)
 				{
-					int	value = this.probabilitySlider.getValue();
-
-					setOptionProbability(stepNumber, optionNumber, value);
+					setOptionProbability(stepNumber, optionNumber);
+				}
+				else if (source == this.muteSlider)
+				{
+					setOptionMuteProbability(stepNumber, optionNumber);
+				}
+				else if (source == this.ratchetSlider)
+				{
+					setOptionRatchetProbability(stepNumber, optionNumber);
+				}
+				else if (source == this.tieSlider)
+				{
+					setOptionTieProbability(stepNumber, optionNumber);
 				}
 				else if (source == this.velocityLowerSlider)
 				{
-					int	value = this.velocityLowerSlider.getValue();
-
-					setOptionVelocityLower(stepNumber, optionNumber, value);
+					setOptionVelocityLower(stepNumber, optionNumber);
 				}
 				else if (source == this.velocityUpperSlider)
 				{
-					int	value = this.velocityUpperSlider.getValue();
-
-					setOptionVelocityUpper(stepNumber, optionNumber, value);
+					setOptionVelocityUpper(stepNumber, optionNumber);
 				}
 			}
 		}
@@ -872,7 +968,15 @@ System.err.println(inException);
 			Option	option = getOption(stepNumber, optionNumber);
 
 			this.probabilitySlider.setValue(option.probability);
+			this.muteSlider.setValue(option.muteProbability);
+			this.tieSlider.setValue(option.tieProbability);
+			this.ratchetSlider.setValue(option.ratchetProbability);
+
 			this.velocityLowerSlider.setValue(option.velocityLower);
+			this.velocityUpperSlider.setValue(option.velocityUpper);
+
+			this.gateTimeLowerSlider.setValue(option.gateTimeLower);
+			this.gateTimeUpperSlider.setValue(option.gateTimeUpper);
 
 			this.lowerKeyboardView.setOption(stepNumber, optionNumber);
 			this.upperKeyboardView.setOption(stepNumber, optionNumber);
@@ -956,23 +1060,24 @@ System.err.println(inException);
 	}
 
 	public void
-	setOptionGateTimeLower(int inStepNumber, int inOptionNumber, int inValue)
+	setOptionGateTimeLower(int inStepNumber, int inOptionNumber)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.gateTimeLower = Math.min(option.gateTimeUpper, inValue);
+			option.gateTimeLower = Math.min(option.gateTimeUpper, this.gateTimeLowerSlider.getValue());
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
 	public void
-	setOptionGateTimeUpper(int inStepNumber, int inOptionNumber, int inValue)
+	setOptionGateTimeUpper(int inStepNumber, int inOptionNumber)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.gateTimeUpper = Math.max(option.gateTimeLower, inValue);
+			option.gateTimeUpper = Math.max(option.gateTimeLower, this.gateTimeUpperSlider.getValue());
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
+	// called from KeyboardView
 	public void
 	setOptionNoteLower(int inStepNumber, int inOptionNumber, int inValue)
 	{
@@ -982,6 +1087,7 @@ System.err.println(inException);
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
+	// called from KeyboardView
 	public void
 	setOptionNoteUpper(int inStepNumber, int inOptionNumber, int inValue)
 	{
@@ -992,28 +1098,55 @@ System.err.println(inException);
 	}
 
 	public void
-	setOptionProbability(int inStepNumber, int inOptionNumber, int inValue)
+	setOptionMuteProbability(int inStepNumber, int inOptionNumber)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.probability = inValue;
+			option.muteProbability = this.muteSlider.getValue();
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
 	public void
-	setOptionVelocityLower(int inStepNumber, int inOptionNumber, int inValue)
+	setOptionProbability(int inStepNumber, int inOptionNumber)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.velocityLower = Math.min(option.velocityUpper, inValue);
+			option.probability = this.probabilitySlider.getValue();
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
 
 	public void
-	setOptionVelocityUpper(int inStepNumber, int inOptionNumber, int inValue)
+	setOptionRatchetProbability(int inStepNumber, int inOptionNumber)
 	{
 			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.velocityUpper = Math.max(option.velocityLower, inValue);
+			option.ratchetProbability = this.ratchetSlider.getValue();
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
+
+	public void
+	setOptionTieProbability(int inStepNumber, int inOptionNumber)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.tieProbability = this.tieSlider.getValue();
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
+
+	public void
+	setOptionVelocityLower(int inStepNumber, int inOptionNumber)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.velocityLower = Math.min(option.velocityUpper, this.velocityLowerSlider.getValue());
+
+			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+	}
+
+	public void
+	setOptionVelocityUpper(int inStepNumber, int inOptionNumber)
+	{
+			Option	option = getOption(inStepNumber, inOptionNumber);
+			option.velocityUpper = Math.max(option.velocityLower, this.velocityUpperSlider.getValue());
 
 			this.table.setValueAt(option, inOptionNumber, inStepNumber);
 	}
@@ -1165,16 +1298,16 @@ System.err.println(inException);
 	lowerOctaveLabel = null;
 
 	private JSlider
-	velocityLowerSlider = null;
-
-	private JSlider
-	velocityUpperSlider = null;
+	muteSlider = null;
 
 	private JSlider
 	probabilitySlider = null;
 
 	private Random
 	random = new Random();
+
+	private JSlider
+	ratchetSlider = null;
 
 	private Sequence
 	sequence;
@@ -1185,11 +1318,20 @@ System.err.println(inException);
 	private JTable
 	table = null;
 	
+	private JSlider
+	tieSlider = null;
+
 	private KeyboardView
 	upperKeyboardView = null;
 
 	private JLabel
 	upperOctaveLabel = null;
+
+	private JSlider
+	velocityLowerSlider = null;
+
+	private JSlider
+	velocityUpperSlider = null;
 
 	// PRIVATE DATA
 
