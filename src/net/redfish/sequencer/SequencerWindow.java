@@ -31,13 +31,21 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
-import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Sequencer;
+import javax.sound.midi.ShortMessage;
 import javax.sound.midi.SysexMessage;
+import javax.sound.midi.Transmitter;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -67,11 +75,13 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.UIManager;
 
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
+
 // CLASS
 
 public class SequencerWindow
 	extends JFrame
-	implements ActionListener, ChangeListener, ClipboardOwner, ListSelectionListener, MouseListener
+	implements ActionListener, ChangeListener, ClipboardOwner, ListSelectionListener, MidiHost, MouseListener
 {
 	// MAINLINE
 
@@ -244,6 +254,10 @@ public class SequencerWindow
 	SequencerWindow()
 	{
 		this.sequence = new Sequence(16, 2);
+
+		// INITIALISE MIDI
+
+		openMidi();
 
 		// CONFIGURATION
 		
@@ -561,6 +575,14 @@ public class SequencerWindow
 		stopButton.addActionListener(this);
 		buttonBar.add(stopButton);
 
+		// add the MIDI configuration panel
+		JPanel	midiDevicePanel = makeMIDIPanel();
+		
+		if (midiDevicePanel != null)
+		{
+			buttonBar.add(midiDevicePanel);
+		}
+
 		JButton	saveButton = new JButton("Save Sequence");
 		saveButton.setActionCommand("SAVE");
 		saveButton.addActionListener(this);
@@ -681,6 +703,23 @@ public class SequencerWindow
 		
 		System.out.println("SequencerWindow.actionPerformed() " + actionCommand);
 
+		if (actionCommand.equalsIgnoreCase("COPY"))
+		{
+			int stepNumber = this.table.getSelectedColumn();
+			int optionNumber = this.table.getSelectedRow();
+
+			if (stepNumber >= 0 && optionNumber >= 0)
+			{
+				Option	option = getOption(stepNumber, optionNumber);
+				TransferableOption	transferable = new TransferableOption(option);
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
+			}
+			else
+			{
+				SequencerWindow.showErrorDialog("Error", "Please select an option to copy.");
+			}
+		}
+		else
 		if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
 		{
 			setVisible(false);
@@ -689,25 +728,6 @@ public class SequencerWindow
 			{
 				dispose();
 			}
-		}
-		else
-		if (actionCommand.equalsIgnoreCase("SAVE") || actionCommand.equalsIgnoreCase("SAVE_AS"))
-		{
-			boolean	askForFile = false;
-			
-			if (actionCommand.equalsIgnoreCase("SAVE_AS"))
-			{
-				askForFile = true;
-			}
-			else
-			{
-				if (this.file == null)
-				{
-					askForFile = true;
-				}
-			}
-			
-			saveSequence(askForFile);
 		}
 		else
 		if (actionCommand.equalsIgnoreCase("LOWER_OCTAVE_DOWN"))
@@ -740,51 +760,22 @@ public class SequencerWindow
 			}
 		}
 		else
-		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_DOWN"))
+		if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
-			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
+			sendMidiAllNotesOff ();
 			
-			octaveOffset--;
-			
-			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
-			{
-				this.upperOctaveLabel.setText("" + octaveOffset);
-
-				this.upperKeyboardView.revalidate();
-				this.upperKeyboardView.repaint();
-			}
+			saveMidiChannelPreference ();
 		}
 		else
-		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_UP"))
+		if (actionCommand.equals ("MIDI_INPUT_DEVICE_POPUP"))
 		{
-			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
-			
-			octaveOffset++;
-			
-			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
-			{
-				this.upperOctaveLabel.setText("" + octaveOffset);
-
-				this.upperKeyboardView.revalidate();
-				this.upperKeyboardView.repaint();
-			}
+			saveMidiInputDevicePreference ();
 		}
 		else
-		if (actionCommand.equalsIgnoreCase("COPY"))
+		if (actionCommand.equals ("MIDI_OUTPUT_DEVICE_POPUP"))
 		{
-			int stepNumber = this.table.getSelectedColumn();
-			int optionNumber = this.table.getSelectedRow();
-
-			if (stepNumber >= 0 && optionNumber >= 0)
-			{
-				Option	option = getOption(stepNumber, optionNumber);
-				TransferableOption	transferable = new TransferableOption(option);
-				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
-			}
-			else
-			{
-				SequencerWindow.showErrorDialog("Error", "Please select an option to copy.");
-			}
+			sendMidiAllNotesOff();
+			saveMidiOutputDevicePreference ();
 		}
 		else
 		if (actionCommand.equalsIgnoreCase("PASTE"))
@@ -870,6 +861,55 @@ public class SequencerWindow
 			else
 			{
 				SequencerWindow.showErrorDialog("Error", "Please select an option location to swap paste.");
+			}
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("SAVE") || actionCommand.equalsIgnoreCase("SAVE_AS"))
+		{
+			boolean	askForFile = false;
+			
+			if (actionCommand.equalsIgnoreCase("SAVE_AS"))
+			{
+				askForFile = true;
+			}
+			else
+			{
+				if (this.file == null)
+				{
+					askForFile = true;
+				}
+			}
+			
+			saveSequence(askForFile);
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_DOWN"))
+		{
+			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
+			
+			octaveOffset--;
+			
+			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.upperOctaveLabel.setText("" + octaveOffset);
+
+				this.upperKeyboardView.revalidate();
+				this.upperKeyboardView.repaint();
+			}
+		}
+		else
+		if (actionCommand.equalsIgnoreCase("UPPER_OCTAVE_UP"))
+		{
+			int	octaveOffset = this.upperKeyboardView.getOctaveOffset();
+			
+			octaveOffset++;
+			
+			if (this.upperKeyboardView.setOctaveOffset(octaveOffset))
+			{
+				this.upperOctaveLabel.setText("" + octaveOffset);
+
+				this.upperKeyboardView.revalidate();
+				this.upperKeyboardView.repaint();
 			}
 		}
 		else
@@ -1004,6 +1044,35 @@ public class SequencerWindow
 
 	// PUBLIC METHODS
 
+	public int
+	getMidiChannel0 ()
+	{
+		return this.midiChannel0;
+	}
+
+	// transmitters are lazily instantiated to speed up startup time
+	public Transmitter
+	getMidiTransmitter (int inDeviceIndex)
+		throws MidiUnavailableException
+	{
+		Transmitter	transmitter = null;
+		
+		if (inDeviceIndex >= 0 && inDeviceIndex < this.midiTransmitterList.size ())
+		{
+			transmitter = this.midiTransmitterList.get (inDeviceIndex);
+			
+			if (transmitter == null)
+			{
+				MidiDevice	device = this.midiInputDeviceList.get (inDeviceIndex);
+				transmitter = device.getTransmitter ();
+				transmitter.setReceiver (new MidiReceiver (device, this));
+				this.midiTransmitterList.set (inDeviceIndex, transmitter);
+			}
+		}
+		
+		return transmitter;
+	}
+
 	public Option
 	getOption(int inStepNumber, int inOptionNumber)
 	{
@@ -1018,6 +1087,120 @@ public class SequencerWindow
 		int	number = this.random.nextInt();
 
 		return Math.abs(number) % inLimit;
+	}
+
+	public void
+	sendMidiAllNotesOff ()
+	{
+		// do we trust this?
+		sendMidiControlChange(0x7b, 0x00);
+	}
+	
+	public void
+	sendMidiChannelPressure (int inPressure)
+	{
+	}
+	
+	public void
+	sendMidiContinue ()
+	{
+	}
+	
+	public void
+	sendMidiControlChange (int inControlNumber, int inControlValue)
+	{
+		try
+		{
+			ShortMessage	message = new ShortMessage ();
+			message.setMessage (ShortMessage.CONTROL_CHANGE,
+				this.midiChannel0, inControlNumber, inControlValue);
+			
+			sendMidiMessage (message);
+		}
+		catch (Throwable inThrowable)
+		{
+			System.err.println (inThrowable);
+		}
+	}
+
+	public MidiDevice
+	getMidiInputDevice ()
+	{
+		return this.midiInputDeviceList.get (this.midiInputDeviceIndex);
+	}
+	
+	public MidiDevice
+	getMidiOutputDevice ()
+	{
+		return this.midiOutputDeviceList.get (this.midiOutputDeviceIndex);
+	}
+
+	public void
+	sendMidiMessage (MidiMessage inMessage)
+		// throws MidiUnavailableException
+	{
+	}
+
+	public void
+	sendMidiMessages (MidiMessage[] inMessages)
+		// throws MidiUnavailableException
+	{
+	}
+
+	public void
+	sendMidiNoteOff (int inNoteNumber)
+	{
+		try
+		{
+			// the person responsible for the velocity=0 note off
+			// should be eviscerated with a blunt spoon
+			sendMidiNoteOn(inNoteNumber, 0);
+		}
+		catch (Throwable inThrowable)
+		{
+			System.err.println (inThrowable);
+		}
+	}
+	
+	public void
+	sendMidiNoteOn (int inNoteNumber, int inVelocity)
+	{
+		try
+		{
+			ShortMessage	message = new ShortMessage();
+			message.setMessage(ShortMessage.NOTE_ON, this.midiChannel0, inNoteNumber, inVelocity);
+			
+			sendMidiMessage (message);
+		}
+		catch (Throwable inThrowable)
+		{
+			System.err.println (inThrowable);
+		}
+	}
+	
+	public void
+	sendMidiPitchBend (int inLSB, int inMSB)
+	{
+	}
+	
+	public void
+	sendMidiProgramChange (int inPatchNumber)
+	{
+	}
+
+	public void
+	sendMidiStart ()
+	{
+	}
+
+	public void
+	sendMidiStop ()
+	{
+	}
+
+	public void
+	setParameterValueFromMIDI (int inParameterNumber, int inParameterValue)
+	{
 	}
 
 	public void
@@ -1195,6 +1378,328 @@ public class SequencerWindow
 	// PRIVATE METHODS
 	
 	private void
+	loadMidiChannelPreference ()
+	{
+		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		
+		// MIDI channel is saved by number
+		int	midiChannel = prefs.getInt ("midiChannel", 1);
+
+		// midi channels start at 1
+		// popups number selections from 0
+		this.midiChannelPopup.setSelectedIndex (midiChannel - 1);
+	}
+	
+	private void
+	loadMidiDevicePreference ()
+	{
+		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		
+		// INPUT DEVICE POPUP
+		
+		if (this.midiInputDeviceList != null && this.midiInputDeviceList.size () > 0)
+		{
+			// use the first MIDI device as the default
+			String	defaultName
+				= this.midiInputDeviceList.get (0).getDeviceInfo ().getName ();
+			
+			String	inputPrefsDeviceName = prefs.get ("midiInputDeviceName", defaultName);
+
+			int	selectedInputIndex = 0;
+			
+			for (int i = 0; i < this.midiInputDeviceList.size (); i++)
+			{
+				MidiDevice	device = this.midiInputDeviceList.get (i);
+				MidiDevice.Info	info = device.getDeviceInfo ();
+				String	name = info.getName ();
+				
+				if (inputPrefsDeviceName.equalsIgnoreCase (name))
+				{
+					selectedInputIndex = i;
+				}
+			}
+			
+			this.midiInputDevicePopup.setSelectedIndex (selectedInputIndex);
+		}
+
+		// OUTPUT DEVICE POPUP
+		
+		if (this.midiOutputDeviceList != null && this.midiOutputDeviceList.size () > 0)
+		{
+			// use the first MIDI device as the default
+			String	defaultName = this.midiOutputDeviceList.get (0).getDeviceInfo ().getName ();
+			
+			String	prefsDeviceName = prefs.get ("midiOutputDeviceName", defaultName);
+
+			int	selectedIndex = 0;
+			
+			for (int i = 0; i < this.midiOutputDeviceList.size (); i++)
+			{
+				MidiDevice	device = this.midiOutputDeviceList.get (i);
+				MidiDevice.Info	info = device.getDeviceInfo ();
+				String	name = info.getName ();
+				
+				if (prefsDeviceName.equalsIgnoreCase (name))
+				{
+					selectedIndex = i;
+					break;
+				}
+			}
+			
+			this.midiOutputDevicePopup.setSelectedIndex (selectedIndex);
+		}
+
+	}
+	
+	private JPanel
+	makeMIDIPanel ()
+	{
+		// PANEL
+		
+		JPanel	panel = new JPanel ();
+		panel.setLayout (new FlowLayout (FlowLayout.CENTER));
+		
+		// MIDI INPUT DEVICE
+		
+		JLabel	label = new JLabel ("Input:");
+		panel.add (label);
+
+		// build the name array for the input device popup
+		String[]	inputDeviceNameArray = new String [this.midiInputDeviceList.size ()];
+
+		for (int i = 0; i < this.midiInputDeviceList.size (); i++)
+		{
+			MidiDevice	device = this.midiInputDeviceList.get (i);
+			inputDeviceNameArray [i] = device.getDeviceInfo ().getName ();
+		}
+		
+		this.midiInputDevicePopup = new JComboBox (inputDeviceNameArray);
+		// this.midiInputDevicePopup.setPreferredSize (new Dimension (200, 30));
+		this.midiInputDevicePopup.setActionCommand ("MIDI_INPUT_DEVICE_POPUP");
+		this.midiInputDevicePopup.addActionListener (this);
+		panel.add (this.midiInputDevicePopup);
+		
+		// MIDI OUTPUT DEVICE
+		
+		label = new JLabel ("Output:");
+		panel.add (label);
+		
+		// build the name array for the output device popup
+		String[]	outputDeviceNameArray = new String [this.midiOutputDeviceList.size ()];
+
+		for (int i = 0; i < this.midiOutputDeviceList.size (); i++)
+		{
+			MidiDevice	device = this.midiOutputDeviceList.get (i);
+			outputDeviceNameArray [i] = device.getDeviceInfo ().getName ();
+		}
+		
+		this.midiOutputDevicePopup = new JComboBox (outputDeviceNameArray);
+		// this.midiOutputDevicePopup.setPreferredSize (new Dimension (200, 30));
+		this.midiOutputDevicePopup.setActionCommand ("MIDI_OUTPUT_DEVICE_POPUP");
+		this.midiOutputDevicePopup.addActionListener (this);
+		panel.add (this.midiOutputDevicePopup);
+		
+		loadMidiDevicePreference ();
+		
+		// MIDI CHANNEL
+		
+		label = new JLabel ("Channel:");
+		panel.add (label);
+		
+		String[]	channelNames = new String [16];
+		
+		for (int i = 0; i < 16; i++)
+		{
+			channelNames [i] = Integer.toString (i + 1);
+		}
+
+		this.midiChannelPopup = new JComboBox (channelNames);
+		this.midiChannelPopup.setActionCommand ("MIDI_CHANNEL_POPUP");
+		this.midiChannelPopup.addActionListener (this);
+		panel.add (this.midiChannelPopup);
+		
+		loadMidiChannelPreference ();
+
+		return panel;
+	}
+	
+	private void
+	openMidi ()
+	{
+		MidiDevice.Info[]	deviceInfoArray = null;
+
+		// get a list of MIDI devices
+		// on Mac we use CoreMIDI4J
+		// everywhere else, regular JavaMIDI actually works so we use that
+		try
+		{
+			Class	cm4jclass = Class.forName
+				("uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider");
+		
+System.err.println ("using CoreMIDI4J for MIDI");
+
+			deviceInfoArray = CoreMidiDeviceProvider.getMidiDeviceInfo ();
+		}
+		catch (ClassNotFoundException inException)
+		{
+System.err.println ("using JavaMIDI for MIDI");
+
+			deviceInfoArray = MidiSystem.getMidiDeviceInfo ();
+		}
+		
+		if (deviceInfoArray == null || deviceInfoArray.length == 0)
+		{
+			System.err.println ("no MIDI devices found");
+			return;
+		}
+		
+		// build our device lists
+		this.midiInputDeviceList = new ArrayList<MidiDevice> ();
+		this.midiOutputDeviceList = new ArrayList<MidiDevice> ();
+
+		// and the transmitter/receiver lists
+		// btw input == transmitter, output == receiver
+		this.midiReceiverList = new ArrayList<Receiver> ();
+		this.midiTransmitterList = new ArrayList<Transmitter> ();
+		
+		for (int i = 0; i < deviceInfoArray.length; i++)
+		{
+			MidiDevice.Info	deviceInfo = deviceInfoArray [i];
+			
+			try
+			{
+				MidiDevice	device =  MidiSystem.getMidiDevice (deviceInfo);
+				
+				if (device instanceof Sequencer)
+				{
+					// we don't talk to Java Sequencers
+					// but we *do* talk to Java Synthesizers
+					// as some people have software Prophets
+				}
+				else
+				{
+					device.open ();
+					
+					// caution here: this can return -1 for "unlimited transmitters"
+					if (device.getMaxTransmitters () != 0)
+					{
+						this.midiInputDeviceList.add (device);
+
+						// transmitters are lazily instantiated now
+						this.midiTransmitterList.add (null);
+					}
+							
+					// caution here: this can return -1 for "unlimited receivers"
+					if (device.getMaxReceivers () != 0)
+					{
+						this.midiOutputDeviceList.add (device);
+						
+						// receivers are lazily instantiated now
+						this.midiReceiverList.add (null);
+					}
+				}
+			}
+			catch (Exception inException)
+			{
+				// can't open device
+				// or couldn't get receiver/transmitter
+				// == ignore the device
+				System.err.println (inException);
+			}
+		}
+	}
+	
+	// this gets called when the channel popup gets a value
+	// ie during startup, and when the user changes it
+	private void
+	saveMidiChannelPreference ()
+	{
+		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		
+		if (this.midiChannelPopup != null)
+		{
+			int	selectedChannelIndex = this.midiChannelPopup.getSelectedIndex ();
+
+			if (selectedChannelIndex == -1)
+			{
+				selectedChannelIndex = 0;
+			}
+
+			prefs.putInt ("midiChannel", selectedChannelIndex + 1);
+			
+			// and update our local cache
+			this.midiChannel0 = selectedChannelIndex;
+		}
+	}
+	
+	// this gets called when the input device popup gets a value
+	// ie during startup, and when the user changes it
+	private void
+	saveMidiInputDevicePreference ()
+	{
+		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		
+		// INPUT DEVICE POPUP
+
+		if (this.midiInputDevicePopup != null)
+		{
+			int	selectedDeviceIndex = this.midiInputDevicePopup.getSelectedIndex ();
+			
+			if (selectedDeviceIndex == -1)
+			{
+				selectedDeviceIndex = 0;
+			}
+			
+			String	selectedDevice
+				= (String) this.midiInputDevicePopup.getItemAt (selectedDeviceIndex);
+			
+			prefs.put ("midiInputDeviceName", selectedDevice);
+			
+			// and update our local cache
+			this.midiInputDeviceIndex = selectedDeviceIndex;
+			
+			try
+			{
+				// and ensure we have a transmitter cached
+				// because we're listening... all the time
+				getMidiTransmitter (this.midiInputDeviceIndex);
+			}
+			catch (Throwable inThrowable)
+			{
+System.err.println (inThrowable);
+			}
+		}
+	}
+	
+	// this gets called when the output device popup gets a value
+	// ie during startup, and when the user changes it
+	private void
+	saveMidiOutputDevicePreference ()
+	{
+		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		
+		// OUTPUT DEVICE POPUP
+
+		if (this.midiOutputDevicePopup != null)
+		{
+			int	selectedDeviceIndex = this.midiOutputDevicePopup.getSelectedIndex ();
+			
+			if (selectedDeviceIndex == -1)
+			{
+				selectedDeviceIndex = 0;
+			}
+			
+			String	selectedDevice
+				= (String) this.midiOutputDevicePopup.getItemAt (selectedDeviceIndex);
+			
+			prefs.put ("midiOutputDeviceName", selectedDevice);
+			
+			// and update our local cache
+			this.midiOutputDeviceIndex = selectedDeviceIndex;
+		}
+	}
+	
+	private void
 	packColumns(int inMargin)
 	{
 		TableModel	model = this.table.getModel();
@@ -1341,6 +1846,36 @@ public class SequencerWindow
 	private JLabel
 	lowerOctaveLabel = null;
 
+	private int
+	midiChannel0 = 0;
+	
+	private int
+	midiInputDeviceIndex = 0;
+	
+	private int
+	midiOutputDeviceIndex = 0;
+	
+	private JComboBox
+	midiChannelPopup = null;
+	
+	private JComboBox
+	midiInputDevicePopup = null;
+
+	private JComboBox
+	midiOutputDevicePopup = null;
+	
+	private List<MidiDevice>
+	midiInputDeviceList = null;
+	
+	private List<MidiDevice>
+	midiOutputDeviceList = null;
+	
+	private List<Receiver>
+	midiReceiverList = null;
+	
+	private List<Transmitter>
+	midiTransmitterList = null;
+	
 	private JSlider
 	muteSlider = null;
 
