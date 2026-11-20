@@ -590,6 +590,9 @@ public class SequencerWindow
 
 		this.table.setRowSelectionInterval(0, 0);
 		this.table.setColumnSelectionInterval(0, 0);
+
+		// any changes after this change the sequence
+		this.changesModifySequence = true;
 	}
 
 	// COMPONENT OVERRIDE
@@ -1046,7 +1049,10 @@ public class SequencerWindow
 			SequencerWindow.showErrorDialog("Error", "Please select a step option.");
 		}
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1057,7 +1063,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1068,7 +1077,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	// called from KeyboardView
@@ -1080,7 +1092,10 @@ public class SequencerWindow
 	
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	// called from KeyboardView
@@ -1092,7 +1107,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1103,7 +1121,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1114,7 +1135,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1125,7 +1149,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1136,7 +1163,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1147,7 +1177,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	public void
@@ -1158,7 +1191,10 @@ public class SequencerWindow
 
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
 
-		setSequenceModified(true);
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true);
+		}
 	}
 
 	// PRIVATE METHODS
@@ -1291,6 +1327,9 @@ public class SequencerWindow
 	sInstance = null;
 
 	// PRIVATE DATA
+
+	private boolean
+	changesModifySequence = false;
 
 	private File
 	file = null;
