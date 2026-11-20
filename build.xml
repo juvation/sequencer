@@ -96,7 +96,7 @@
 		name="run"
 		depends="jar"
 		>
-		<java classname="net.redfish.sequencer.SequencerWindow" classpath="sequencer.jar" fork="true">
+		<java classname="net.redfish.sequencer.SequencerWindow" classpath="sequencer.jar:lib/coremidi4j-1.6.jar" fork="true">
     </java>
 	</target>
 	

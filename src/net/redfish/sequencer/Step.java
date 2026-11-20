@@ -19,11 +19,11 @@ public class Step
 		this.selectedOption = null;
 		this.stepNumber = inStepNumber;
 
-		this.noteOptions = new ArrayList<Option>();
+		this.options = new ArrayList<Option>();
 
 		for (int i = 0; i < inOptionCount; i++)
 		{
-			this.noteOptions.add(new Option());
+			this.options.add(new Option());
 		}
 	}
 
@@ -38,7 +38,7 @@ public class Step
 	public Option
 	getOption(int inOptionNumber)
 	{
-		return noteOptions.get(inOptionNumber);
+		return options.get(inOptionNumber);
 	}
 
 	public boolean
@@ -95,7 +95,7 @@ public class Step
 		int	roll = SequencerWindow.getInstance().getRandomPositiveInt(100);
 		int	target = 0;
 
-		for (Option option : this.noteOptions)
+		for (Option option : this.options)
 		{
 			target += option.probability;
 
@@ -108,6 +108,7 @@ public class Step
 
 		if (this.selectedOption == null)
 		{
+			System.err.println("no option selected");
 			return;
 		}
 
@@ -132,7 +133,6 @@ public class Step
 
 	}
 
-	
 	// PRIVATE DATA
 	
 	private int
@@ -142,7 +142,7 @@ public class Step
 	selectedOption;
 
 	private ArrayList<Option>
-	noteOptions;
+	options;
 	
 }
 

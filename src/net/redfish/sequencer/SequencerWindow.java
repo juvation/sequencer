@@ -89,9 +89,9 @@ public class SequencerWindow
 
 	public static void
 	main (String[] inArgs)
-		throws Exception
+	throws Exception
 	{
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName ());
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		
 		// OK so the mystery is somewhat solved
 		// userRoot() on Mac seems to return the prefs domain of the app package
@@ -100,7 +100,7 @@ public class SequencerWindow
 		// but it would be dangerous to make cross-platform assumptions
 		// so I am going to leave this as-is
 		
-		sPrefs = Preferences.userRoot ().node (kPreferencesPath);
+		sPrefs = Preferences.userRoot().node (kPreferencesPath);
 
 		// OK, parsed OK, time to make the boss window
 		sInstance = new SequencerWindow();
@@ -111,7 +111,7 @@ public class SequencerWindow
 	// SINGLETON ACCESS POINT
 	
 	public static SequencerWindow
-	getInstance ()
+	getInstance()
 	{
 		// the mainline constructs us
 		// therefore no need to check here
@@ -339,11 +339,11 @@ public class SequencerWindow
 
 		// set the cell contents
 
-		for (int stepNumber = 0; stepNumber < kTableColumnCount; stepNumber++)
+		for(int stepNumber = 0; stepNumber < kTableColumnCount; stepNumber++)
 		{
 			Step	step = this.sequence.getStep(stepNumber);
 
-			for (int optionNumber = 0; optionNumber < kTableRowCount; optionNumber++)
+			for(int optionNumber = 0; optionNumber < kTableRowCount; optionNumber++)
 			{
 				Option	option = step.getOption(optionNumber);
 
@@ -628,6 +628,8 @@ public class SequencerWindow
 		if (inVisible)
 		{
 			super.setVisible(inVisible);
+
+			this.sequence.selectOption(0);
 		}
 		else
 		{
@@ -732,18 +734,18 @@ public class SequencerWindow
 		}
 		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
-			sendMidiAllNotesOff ();
+			sendMidiAllNotesOff();
 			
-			saveMidiChannelPreference ();
+			saveMidiChannelPreference();
 		}
 		else if (actionCommand.equals ("MIDI_INPUT_DEVICE_POPUP"))
 		{
-			saveMidiInputDevicePreference ();
+			saveMidiInputDevicePreference();
 		}
 		else if (actionCommand.equals ("MIDI_OUTPUT_DEVICE_POPUP"))
 		{
 			sendMidiAllNotesOff();
-			saveMidiOutputDevicePreference ();
+			saveMidiOutputDevicePreference();
 		}
 		else if (actionCommand.equalsIgnoreCase("OCTAVE_DOWN_LOWER"))
 		{
@@ -953,12 +955,12 @@ public class SequencerWindow
 	public void
 	stateChanged (ChangeEvent inEvent)
 	{
-		JComponent	source = (JComponent) inEvent.getSource ();
+		JComponent	source = (JComponent) inEvent.getSource();
 
 		if (source instanceof JSlider)
 		{
-			int	stepNumber = this.table.getSelectedColumn ();
-			int	optionNumber = this.table.getSelectedRow ();
+			int	stepNumber = this.table.getSelectedColumn();
+			int	optionNumber = this.table.getSelectedRow();
 			
 			if (stepNumber >= 0 && optionNumber >= 0)
 			{
@@ -1012,13 +1014,13 @@ public class SequencerWindow
 	public void
 	valueChanged (ListSelectionEvent inEvent)
 	{
-		if (inEvent.getValueIsAdjusting ())
+		if (inEvent.getValueIsAdjusting())
 		{
 			return;
 		}
 
-		int	stepNumber = this.table.getSelectedColumn ();
-		int	optionNumber = this.table.getSelectedRow ();
+		int	stepNumber = this.table.getSelectedColumn();
+		int	optionNumber = this.table.getSelectedRow();
 		
 		if (stepNumber >= 0 && optionNumber >= 0)
 		{
@@ -1075,9 +1077,43 @@ public class SequencerWindow
 	// PUBLIC METHODS
 
 	public int
-	getMidiChannel0 ()
+	getMidiChannel0()
 	{
 		return this.midiChannel0;
+	}
+
+	public MidiDevice
+	getMidiInputDevice()
+	{
+		return this.midiInputDeviceList.get (this.midiInputDeviceIndex);
+	}
+	
+	public MidiDevice
+	getMidiOutputDevice()
+	{
+		return this.midiOutputDeviceList.get (this.midiOutputDeviceIndex);
+	}
+
+	// receivers are lazily instantiated to speed up startup time
+	public Receiver
+	getMidiReceiver (int inDeviceIndex)
+		throws MidiUnavailableException
+	{
+		Receiver	receiver = null;
+		
+		if (inDeviceIndex >= 0 && inDeviceIndex < this.midiReceiverList.size ())
+		{
+			receiver = this.midiReceiverList.get (inDeviceIndex);
+			
+			if (receiver == null)
+			{
+				MidiDevice	device = this.midiOutputDeviceList.get (inDeviceIndex);
+				receiver = device.getReceiver ();
+				this.midiReceiverList.set (inDeviceIndex, receiver);
+			}
+		}
+		
+		return receiver;
 	}
 
 	// transmitters are lazily instantiated to speed up startup time
@@ -1102,7 +1138,7 @@ public class SequencerWindow
 		
 		return transmitter;
 	}
-
+	
 	public Option
 	getOption(int inStepNumber, int inOptionNumber)
 	{
@@ -1120,55 +1156,47 @@ public class SequencerWindow
 	}
 
 	public void
-	sendMidiAllNotesOff ()
+	sendMidiAllNotesOff()
 	{
 		// do we trust this?
 		sendMidiControlChange(0x7b, 0x00);
 	}
 	
 	public void
-	sendMidiChannelPressure (int inPressure)
+	sendMidiChannelPressure(int inPressure)
 	{
 	}
 	
 	public void
-	sendMidiContinue ()
+	sendMidiContinue()
 	{
 	}
 	
 	public void
-	sendMidiControlChange (int inControlNumber, int inControlValue)
+	sendMidiControlChange(int inControlNumber, int inControlValue)
 	{
 		try
 		{
-			ShortMessage	message = new ShortMessage ();
-			message.setMessage (ShortMessage.CONTROL_CHANGE,
-				this.midiChannel0, inControlNumber, inControlValue);
+			ShortMessage	message = new ShortMessage();
+			message.setMessage (ShortMessage.CONTROL_CHANGE, this.midiChannel0, inControlNumber, inControlValue);
 			
 			sendMidiMessage (message);
 		}
 		catch (Throwable inThrowable)
 		{
-			System.err.println (inThrowable);
+			System.err.println(inThrowable);
 		}
-	}
-
-	public MidiDevice
-	getMidiInputDevice ()
-	{
-		return this.midiInputDeviceList.get (this.midiInputDeviceIndex);
-	}
-	
-	public MidiDevice
-	getMidiOutputDevice ()
-	{
-		return this.midiOutputDeviceList.get (this.midiOutputDeviceIndex);
 	}
 
 	public void
 	sendMidiMessage (MidiMessage inMessage)
-		// throws MidiUnavailableException
+	throws MidiUnavailableException
 	{
+		if (this.midiOutputDeviceIndex >= 0 && this.midiOutputDeviceIndex < this.midiOutputDeviceList.size ())
+		{
+			Receiver	receiver = getMidiReceiver (this.midiOutputDeviceIndex);
+			receiver.send (inMessage, 0);
+		}
 	}
 
 	public void
@@ -1178,7 +1206,7 @@ public class SequencerWindow
 	}
 
 	public void
-	sendMidiNoteOff (int inNoteNumber)
+	sendMidiNoteOff(int inNoteNumber)
 	{
 		try
 		{
@@ -1188,48 +1216,43 @@ public class SequencerWindow
 		}
 		catch (Throwable inThrowable)
 		{
-			System.err.println (inThrowable);
+			System.err.println(inThrowable);
 		}
 	}
 	
 	public void
-	sendMidiNoteOn (int inNoteNumber, int inVelocity)
+	sendMidiNoteOn(int inNoteNumber, int inVelocity)
 	{
 		try
 		{
 			ShortMessage	message = new ShortMessage();
 			message.setMessage(ShortMessage.NOTE_ON, this.midiChannel0, inNoteNumber, inVelocity);
 			
-			sendMidiMessage (message);
+			sendMidiMessage(message);
 		}
 		catch (Throwable inThrowable)
 		{
-			System.err.println (inThrowable);
+			System.err.println(inThrowable);
 		}
 	}
 	
 	public void
-	sendMidiPitchBend (int inLSB, int inMSB)
+	sendMidiPitchBend(int inLSB, int inMSB)
 	{
 	}
 	
 	public void
-	sendMidiProgramChange (int inPatchNumber)
+	sendMidiProgramChange(int inPatchNumber)
 	{
 	}
 
 	public void
-	sendMidiStart ()
+	sendMidiStart()
 	{
 	}
 
 	public void
-	sendMidiStop ()
-	{
-	}
-
-	public void
-	setParameterValueFromMIDI (int inParameterNumber, int inParameterValue)
+	sendMidiStop()
 	{
 	}
 
@@ -1240,6 +1263,8 @@ public class SequencerWindow
 		getRootPane().putClientProperty("Window.documentModified", Boolean.valueOf(inModified));
 		
 		this.sequence.setModified(inModified);
+
+		this.sequence.selectOption(0);
 	}
 	
 	public void
@@ -1408,9 +1433,9 @@ public class SequencerWindow
 	// PRIVATE METHODS
 	
 	private void
-	loadMidiChannelPreference ()
+	loadMidiChannelPreference()
 	{
-		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		Preferences	prefs = Preferences.userRoot().node (kPreferencesPath);
 		
 		// MIDI channel is saved by number
 		int	midiChannel = prefs.getInt ("midiChannel", 1);
@@ -1421,27 +1446,27 @@ public class SequencerWindow
 	}
 	
 	private void
-	loadMidiDevicePreference ()
+	loadMidiDevicePreference()
 	{
-		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		Preferences	prefs = Preferences.userRoot().node (kPreferencesPath);
 		
 		// INPUT DEVICE POPUP
 		
-		if (this.midiInputDeviceList != null && this.midiInputDeviceList.size () > 0)
+		if (this.midiInputDeviceList != null && this.midiInputDeviceList.size() > 0)
 		{
 			// use the first MIDI device as the default
 			String	defaultName
-				= this.midiInputDeviceList.get (0).getDeviceInfo ().getName ();
+				= this.midiInputDeviceList.get (0).getDeviceInfo().getName();
 			
 			String	inputPrefsDeviceName = prefs.get ("midiInputDeviceName", defaultName);
 
 			int	selectedInputIndex = 0;
 			
-			for (int i = 0; i < this.midiInputDeviceList.size (); i++)
+			for(int i = 0; i < this.midiInputDeviceList.size(); i++)
 			{
 				MidiDevice	device = this.midiInputDeviceList.get (i);
-				MidiDevice.Info	info = device.getDeviceInfo ();
-				String	name = info.getName ();
+				MidiDevice.Info	info = device.getDeviceInfo();
+				String	name = info.getName();
 				
 				if (inputPrefsDeviceName.equalsIgnoreCase (name))
 				{
@@ -1454,20 +1479,20 @@ public class SequencerWindow
 
 		// OUTPUT DEVICE POPUP
 		
-		if (this.midiOutputDeviceList != null && this.midiOutputDeviceList.size () > 0)
+		if (this.midiOutputDeviceList != null && this.midiOutputDeviceList.size() > 0)
 		{
 			// use the first MIDI device as the default
-			String	defaultName = this.midiOutputDeviceList.get (0).getDeviceInfo ().getName ();
+			String	defaultName = this.midiOutputDeviceList.get (0).getDeviceInfo().getName();
 			
 			String	prefsDeviceName = prefs.get ("midiOutputDeviceName", defaultName);
 
 			int	selectedIndex = 0;
 			
-			for (int i = 0; i < this.midiOutputDeviceList.size (); i++)
+			for(int i = 0; i < this.midiOutputDeviceList.size(); i++)
 			{
 				MidiDevice	device = this.midiOutputDeviceList.get (i);
-				MidiDevice.Info	info = device.getDeviceInfo ();
-				String	name = info.getName ();
+				MidiDevice.Info	info = device.getDeviceInfo();
+				String	name = info.getName();
 				
 				if (prefsDeviceName.equalsIgnoreCase (name))
 				{
@@ -1482,11 +1507,11 @@ public class SequencerWindow
 	}
 	
 	private JPanel
-	makeMIDIPanel ()
+	makeMIDIPanel()
 	{
 		// PANEL
 		
-		JPanel	panel = new JPanel ();
+		JPanel	panel = new JPanel();
 		panel.setLayout (new FlowLayout (FlowLayout.CENTER));
 		
 		// MIDI INPUT DEVICE
@@ -1495,12 +1520,12 @@ public class SequencerWindow
 		panel.add (label);
 
 		// build the name array for the input device popup
-		String[]	inputDeviceNameArray = new String [this.midiInputDeviceList.size ()];
+		String[]	inputDeviceNameArray = new String [this.midiInputDeviceList.size()];
 
-		for (int i = 0; i < this.midiInputDeviceList.size (); i++)
+		for(int i = 0; i < this.midiInputDeviceList.size(); i++)
 		{
 			MidiDevice	device = this.midiInputDeviceList.get (i);
-			inputDeviceNameArray [i] = device.getDeviceInfo ().getName ();
+			inputDeviceNameArray [i] = device.getDeviceInfo().getName();
 		}
 		
 		this.midiInputDevicePopup = new JComboBox (inputDeviceNameArray);
@@ -1515,12 +1540,12 @@ public class SequencerWindow
 		panel.add (label);
 		
 		// build the name array for the output device popup
-		String[]	outputDeviceNameArray = new String [this.midiOutputDeviceList.size ()];
+		String[]	outputDeviceNameArray = new String [this.midiOutputDeviceList.size()];
 
-		for (int i = 0; i < this.midiOutputDeviceList.size (); i++)
+		for(int i = 0; i < this.midiOutputDeviceList.size(); i++)
 		{
 			MidiDevice	device = this.midiOutputDeviceList.get (i);
-			outputDeviceNameArray [i] = device.getDeviceInfo ().getName ();
+			outputDeviceNameArray [i] = device.getDeviceInfo().getName();
 		}
 		
 		this.midiOutputDevicePopup = new JComboBox (outputDeviceNameArray);
@@ -1529,7 +1554,7 @@ public class SequencerWindow
 		this.midiOutputDevicePopup.addActionListener (this);
 		panel.add (this.midiOutputDevicePopup);
 		
-		loadMidiDevicePreference ();
+		loadMidiDevicePreference();
 		
 		// MIDI CHANNEL
 		
@@ -1538,7 +1563,7 @@ public class SequencerWindow
 		
 		String[]	channelNames = new String [16];
 		
-		for (int i = 0; i < 16; i++)
+		for(int i = 0; i < 16; i++)
 		{
 			channelNames [i] = Integer.toString (i + 1);
 		}
@@ -1548,13 +1573,13 @@ public class SequencerWindow
 		this.midiChannelPopup.addActionListener (this);
 		panel.add (this.midiChannelPopup);
 		
-		loadMidiChannelPreference ();
+		loadMidiChannelPreference();
 
 		return panel;
 	}
 	
 	private void
-	openMidi ()
+	openMidi()
 	{
 		MidiDevice.Info[]	deviceInfoArray = null;
 
@@ -1568,13 +1593,13 @@ public class SequencerWindow
 		
 System.err.println ("using CoreMIDI4J for MIDI");
 
-			deviceInfoArray = CoreMidiDeviceProvider.getMidiDeviceInfo ();
+			deviceInfoArray = CoreMidiDeviceProvider.getMidiDeviceInfo();
 		}
 		catch (ClassNotFoundException inException)
 		{
 System.err.println ("using JavaMIDI for MIDI");
 
-			deviceInfoArray = MidiSystem.getMidiDeviceInfo ();
+			deviceInfoArray = MidiSystem.getMidiDeviceInfo();
 		}
 		
 		if (deviceInfoArray == null || deviceInfoArray.length == 0)
@@ -1584,15 +1609,15 @@ System.err.println ("using JavaMIDI for MIDI");
 		}
 		
 		// build our device lists
-		this.midiInputDeviceList = new ArrayList<MidiDevice> ();
-		this.midiOutputDeviceList = new ArrayList<MidiDevice> ();
+		this.midiInputDeviceList = new ArrayList<MidiDevice>();
+		this.midiOutputDeviceList = new ArrayList<MidiDevice>();
 
 		// and the transmitter/receiver lists
 		// btw input == transmitter, output == receiver
-		this.midiReceiverList = new ArrayList<Receiver> ();
-		this.midiTransmitterList = new ArrayList<Transmitter> ();
+		this.midiReceiverList = new ArrayList<Receiver>();
+		this.midiTransmitterList = new ArrayList<Transmitter>();
 		
-		for (int i = 0; i < deviceInfoArray.length; i++)
+		for(int i = 0; i < deviceInfoArray.length; i++)
 		{
 			MidiDevice.Info	deviceInfo = deviceInfoArray [i];
 			
@@ -1608,10 +1633,10 @@ System.err.println ("using JavaMIDI for MIDI");
 				}
 				else
 				{
-					device.open ();
+					device.open();
 					
 					// caution here: this can return -1 for "unlimited transmitters"
-					if (device.getMaxTransmitters () != 0)
+					if (device.getMaxTransmitters() != 0)
 					{
 						this.midiInputDeviceList.add (device);
 
@@ -1620,7 +1645,7 @@ System.err.println ("using JavaMIDI for MIDI");
 					}
 							
 					// caution here: this can return -1 for "unlimited receivers"
-					if (device.getMaxReceivers () != 0)
+					if (device.getMaxReceivers() != 0)
 					{
 						this.midiOutputDeviceList.add (device);
 						
@@ -1642,7 +1667,7 @@ System.err.println ("using JavaMIDI for MIDI");
 	// this gets called when the channel popup gets a value
 	// ie during startup, and when the user changes it
 	private void
-	saveMidiChannelPreference ()
+	saveMidiChannelPreference()
 	{
 		Preferences	prefs = Preferences.userRoot().node(kPreferencesPath);
 		
@@ -1665,15 +1690,15 @@ System.err.println ("using JavaMIDI for MIDI");
 	// this gets called when the input device popup gets a value
 	// ie during startup, and when the user changes it
 	private void
-	saveMidiInputDevicePreference ()
+	saveMidiInputDevicePreference()
 	{
-		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		Preferences	prefs = Preferences.userRoot().node (kPreferencesPath);
 		
 		// INPUT DEVICE POPUP
 
 		if (this.midiInputDevicePopup != null)
 		{
-			int	selectedDeviceIndex = this.midiInputDevicePopup.getSelectedIndex ();
+			int	selectedDeviceIndex = this.midiInputDevicePopup.getSelectedIndex();
 			
 			if (selectedDeviceIndex == -1)
 			{
@@ -1696,7 +1721,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			}
 			catch (Throwable inThrowable)
 			{
-System.err.println (inThrowable);
+				System.err.println(inThrowable);
 			}
 		}
 	}
@@ -1704,15 +1729,15 @@ System.err.println (inThrowable);
 	// this gets called when the output device popup gets a value
 	// ie during startup, and when the user changes it
 	private void
-	saveMidiOutputDevicePreference ()
+	saveMidiOutputDevicePreference()
 	{
-		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		Preferences	prefs = Preferences.userRoot().node (kPreferencesPath);
 		
 		// OUTPUT DEVICE POPUP
 
 		if (this.midiOutputDevicePopup != null)
 		{
-			int	selectedDeviceIndex = this.midiOutputDevicePopup.getSelectedIndex ();
+			int	selectedDeviceIndex = this.midiOutputDevicePopup.getSelectedIndex();
 			
 			if (selectedDeviceIndex == -1)
 			{
@@ -1735,14 +1760,14 @@ System.err.println (inThrowable);
 		TableModel	model = this.table.getModel();
 		DefaultTableColumnModel	columnModel = (DefaultTableColumnModel) table.getColumnModel();
 			
-		for (int col = 0; col < this.table.getColumnCount(); col++)
+		for(int col = 0; col < this.table.getColumnCount(); col++)
 		{
 			TableColumn	column = columnModel.getColumn(col);
 			
 			int	width = 0;
 
 			// determine widest row in column
-			for (int row = 0; row < this.table.getRowCount(); row++)
+			for(int row = 0; row < this.table.getRowCount(); row++)
 			{
 				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
 				Component	component = renderer.getTableCellRendererComponent
@@ -1761,12 +1786,12 @@ System.err.println (inThrowable);
 	private void
 	packRows(int inMargin)
 	{
-		for (int row = 0; row < this.table.getRowCount(); row++)
+		for(int row = 0; row < this.table.getRowCount(); row++)
 		{
 			int	height = this.table.getRowHeight();
 			
 			// determine highest cell in row
-			for (int col = 0; col < this.table.getColumnCount(); col++)
+			for(int col = 0; col < this.table.getColumnCount(); col++)
 			{
 				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
 				Component	component = this.table.prepareRenderer(renderer, row, col);
@@ -1834,10 +1859,105 @@ System.err.println (inThrowable);
 		return saved;
 	}
 
+	// this goes off at 24ppqn
+	// HACK hardwire steps to quaver length
 	private void
 	timerTick()
 	{
+		int			stepNumber = this.timerTickCount / 12;
+		Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
+
+		if (selectedOption != null)
+		{
+			int	subtick = this.timerTickCount % (24 / 2);
+		
+			switch(subtick)
+			{
+				// new step
+				case 0:
+					System.out.println("step " + stepNumber + " firing (ratchet? " + selectedOption.ratchet);
+					sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
+					break;
+				
+				// if ratcheting then turn off note 1 here
+				case 2:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOff(selectedOption.note);
+					}
+					break;
+					
+				// if ratcheting then turn on note 2 here
+				case 3:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
+					}
+					break;
+					
+				// if ratcheting then turn off note 2 here
+				case 5:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOff(selectedOption.note);
+					}
+					break;
+					
+				// if ratcheting then turn on note 3 here
+				case 6:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
+					}
+					break;
+	
+				// if ratcheting then turn off note 3 here
+				case 8:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOff(selectedOption.note);
+					}
+					break;
+				
+				// if ratcheting then turn on note 4 here
+				case 9:
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
+					}
+					break;
+					
+				// if ratcheting then turn off note 4 here
+				case 11:
+				{
+					if (selectedOption.ratchet)
+					{
+						sendMidiNoteOff(selectedOption.note);
+					}
+
+					// and this is a good spot to calculate the next step's option
+					this.sequence.selectOption((stepNumber + 1) % 16);
+					break;
+			}
+			}
+	
+			// now sort out whether to turn a non-ratchet note off
+			if (!selectedOption.ratchet)
+			{
+				if (subtick == selectedOption.gateTime / 12)
+				{
+					sendMidiNoteOff(selectedOption.note);
+				}
+			}
+		}
+	
 		this.timerTickCount++;
+		
+		// HACK hardwire to 16 steps
+		if (this.timerTickCount / 12 == 16)
+		{
+			this.timerTickCount = 0;
+		}
 	}
 
 	// STATIC PRIVATE FINAL DATA
