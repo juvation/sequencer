@@ -10,21 +10,21 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.FileDialog;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.prefs.Preferences;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
@@ -439,8 +441,8 @@ public class SequencerWindow
 		lowerKeyboardPanel.setLayout(new BoxLayout(lowerKeyboardPanel, BoxLayout.Y_AXIS));
 		optionPanel.add(lowerKeyboardPanel);	
 
-		this.keyboardViewLower = new KeyboardView(false, 0, 0);
-		lowerKeyboardPanel.add(this.keyboardViewLower);
+		this.keyboardLowerView = new KeyboardView(false, 0, 0);
+		lowerKeyboardPanel.add(this.keyboardLowerView);
 
 		JPanel	lowerOctavePanel = new JPanel();
 		lowerOctavePanel.setLayout(new BoxLayout(lowerOctavePanel, BoxLayout.X_AXIS));
@@ -451,8 +453,8 @@ public class SequencerWindow
 		lowerOctaveDownButton.addActionListener(this);
 		lowerOctavePanel.add(lowerOctaveDownButton);
 		
-		this.lowerOctaveLabel = new JLabel("0");
-		lowerOctavePanel.add(this.lowerOctaveLabel);
+		this.octaveLowerLabel = new JLabel("0");
+		lowerOctavePanel.add(this.octaveLowerLabel);
 		
 		JButton	lowerOctaveUpButton = new JButton("Octave Up");
 		lowerOctaveUpButton.setActionCommand("OCTAVE_UP_LOWER");
@@ -503,8 +505,8 @@ public class SequencerWindow
 		upperKeyboardPanel.setLayout(new BoxLayout(upperKeyboardPanel, BoxLayout.Y_AXIS));
 		optionPanel.add(upperKeyboardPanel);	
 		
-		this.keyboardViewUpper = new KeyboardView(true, 0, 0);
-		upperKeyboardPanel.add(this.keyboardViewUpper);
+		this.keyboardUpperView = new KeyboardView(true, 0, 0);
+		upperKeyboardPanel.add(this.keyboardUpperView);
 
 		JPanel	upperOctavePanel = new JPanel();
 		upperOctavePanel.setLayout(new BoxLayout(upperOctavePanel, BoxLayout.X_AXIS));
@@ -515,8 +517,8 @@ public class SequencerWindow
 		upperOctaveDownButton.addActionListener(this);
 		upperOctavePanel.add(upperOctaveDownButton);
 		
-		this.upperOctaveLabel = new JLabel("0");
-		upperOctavePanel.add(this.upperOctaveLabel);
+		this.octaveUpperLabel = new JLabel("0");
+		upperOctavePanel.add(this.octaveUpperLabel);
 		
 		JButton	upperOctaveUpButton = new JButton("Octave Up");
 		upperOctaveUpButton.setActionCommand("OCTAVE_UP_UPPER");
@@ -719,8 +721,7 @@ public class SequencerWindow
 				SequencerWindow.showErrorDialog("Error", "Please select an option to copy.");
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
+		else if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
 		{
 			setVisible(false);
 			
@@ -729,86 +730,78 @@ public class SequencerWindow
 				dispose();
 			}
 		}
-		else
-		if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
+		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
 			sendMidiAllNotesOff ();
 			
 			saveMidiChannelPreference ();
 		}
-		else
-		if (actionCommand.equals ("MIDI_INPUT_DEVICE_POPUP"))
+		else if (actionCommand.equals ("MIDI_INPUT_DEVICE_POPUP"))
 		{
 			saveMidiInputDevicePreference ();
 		}
-		else
-		if (actionCommand.equals ("MIDI_OUTPUT_DEVICE_POPUP"))
+		else if (actionCommand.equals ("MIDI_OUTPUT_DEVICE_POPUP"))
 		{
 			sendMidiAllNotesOff();
 			saveMidiOutputDevicePreference ();
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("OCTAVE_DOWN_LOWER"))
+		else if (actionCommand.equalsIgnoreCase("OCTAVE_DOWN_LOWER"))
 		{
-			int	octaveOffset = this.keyboardViewLower.getOctaveOffset();
+			int	octaveOffset = this.keyboardLowerView.getOctaveOffset();
 			
 			octaveOffset--;
 			
-			if (this.keyboardViewLower.setOctaveOffset(octaveOffset))
+			if (this.keyboardLowerView.setOctaveOffset(octaveOffset))
 			{
-				this.lowerOctaveLabel.setText("" + octaveOffset);
+				this.octaveLowerLabel.setText("" + octaveOffset);
 
-				this.keyboardViewLower.revalidate();
-				this.keyboardViewLower.repaint();
+				this.keyboardLowerView.revalidate();
+				this.keyboardLowerView.repaint();
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("OCTAVE_UP_LOWER"))
+		else if (actionCommand.equalsIgnoreCase("OCTAVE_UP_LOWER"))
 		{
-			int	octaveOffset = this.keyboardViewLower.getOctaveOffset();
+			int	octaveOffset = this.keyboardLowerView.getOctaveOffset();
 			
 			octaveOffset++;
 			
-			if (this.keyboardViewLower.setOctaveOffset(octaveOffset))
+			if (this.keyboardLowerView.setOctaveOffset(octaveOffset))
 			{
-				this.lowerOctaveLabel.setText("" + octaveOffset);
+				this.octaveLowerLabel.setText("" + octaveOffset);
 
-				this.keyboardViewLower.revalidate();
-				this.keyboardViewLower.repaint();
+				this.keyboardLowerView.revalidate();
+				this.keyboardLowerView.repaint();
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("OCTAVE_DOWN_UPPER"))
+		else if (actionCommand.equalsIgnoreCase("OCTAVE_DOWN_UPPER"))
 		{
-			int	octaveOffset = this.keyboardViewUpper.getOctaveOffset();
+			int	octaveOffset = this.keyboardUpperView.getOctaveOffset();
 			
 			octaveOffset--;
 			
-			if (this.keyboardViewUpper.setOctaveOffset(octaveOffset))
+			if (this.keyboardUpperView.setOctaveOffset(octaveOffset))
 			{
-				this.upperOctaveLabel.setText("" + octaveOffset);
+				this.octaveUpperLabel.setText("" + octaveOffset);
 
-				this.keyboardViewUpper.revalidate();
-				this.keyboardViewUpper.repaint();
+				this.keyboardUpperView.revalidate();
+				this.keyboardUpperView.repaint();
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("OCTAVE_UP_UPPER"))
+		else if (actionCommand.equalsIgnoreCase("OCTAVE_UP_UPPER"))
 		{
-			int	octaveOffset = this.keyboardViewUpper.getOctaveOffset();
+			int	octaveOffset = this.keyboardUpperView.getOctaveOffset();
 			
 			octaveOffset++;
 			
-			if (this.keyboardViewUpper.setOctaveOffset(octaveOffset))
+			if (this.keyboardUpperView.setOctaveOffset(octaveOffset))
 			{
-				this.upperOctaveLabel.setText("" + octaveOffset);
+				this.octaveUpperLabel.setText("" + octaveOffset);
 
-				this.keyboardViewUpper.revalidate();
-				this.keyboardViewUpper.repaint();
+				this.keyboardUpperView.revalidate();
+				this.keyboardUpperView.repaint();
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("PASTE"))
+		else if (actionCommand.equalsIgnoreCase("PASTE"))
 		{
 			Clipboard	clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			Transferable	transferable = clipboard.getContents(this);
@@ -846,8 +839,7 @@ public class SequencerWindow
 				System.err.println("transferable is null");
 			}
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("SAVE") || actionCommand.equalsIgnoreCase("SAVE_AS"))
+		else if (actionCommand.equalsIgnoreCase("SAVE") || actionCommand.equalsIgnoreCase("SAVE_AS"))
 		{
 			boolean	askForFile = false;
 			
@@ -865,8 +857,46 @@ public class SequencerWindow
 			
 			saveSequence(askForFile);
 		}
-		else
-		if (actionCommand.equalsIgnoreCase("SWAP_PASTE"))
+		else if (actionCommand.equalsIgnoreCase("START"))
+		{
+			if (this.isRunning)
+			{
+				System.err.println("already running");
+			}
+			else
+			{
+				// HACK hardwire to 120bpm
+				double	periodDouble = (1.0 / 48.0) * 1000;
+				long		period = Math.round(periodDouble);
+
+				// having to make a new timer and task each time is stupid
+				this.timer = new Timer();
+				this.timerTask = new SequencerTimerTask();
+
+				this.timer.schedule(this.timerTask, 0, period);
+
+				this.isRunning = true;
+				this.timerTickCount = 0;
+			}
+		}
+		else if (actionCommand.equalsIgnoreCase("STOP"))
+		{
+			if (this.isRunning)
+			{
+				this.timer.cancel();
+				this.timer = null;
+				this.timerTask = null;
+
+				this.isRunning = false;
+
+				System.out.println("timer ran for " + this.timerTickCount + " ticks");
+			}
+			else
+			{
+				System.err.println("not running");
+			}
+		}
+		else if (actionCommand.equalsIgnoreCase("SWAP_PASTE"))
 		{
 			// this is a nondestructive paste which swaps the selection & paste buffer
 			
@@ -1009,8 +1039,8 @@ public class SequencerWindow
 			this.gateTimeLowerSlider.setValue(option.gateTimeLower);
 			this.gateTimeUpperSlider.setValue(option.gateTimeUpper);
 
-			this.keyboardViewLower.setOption(stepNumber, optionNumber);
-			this.keyboardViewUpper.setOption(stepNumber, optionNumber);
+			this.keyboardLowerView.setOption(stepNumber, optionNumber);
+			this.keyboardUpperView.setOption(stepNumber, optionNumber);
 		}
 	}
 	
@@ -1803,7 +1833,13 @@ System.err.println (inThrowable);
 		
 		return saved;
 	}
-	
+
+	private void
+	timerTick()
+	{
+		this.timerTickCount++;
+	}
+
 	// STATIC PRIVATE FINAL DATA
 	
 	private static final
@@ -1840,11 +1876,14 @@ System.err.println (inThrowable);
 	private JSlider
 	gateTimeUpperSlider = null;
 
-	private KeyboardView
-	keyboardViewLower = null;
+	private boolean
+	isRunning = false;
 
-	private JLabel
-	lowerOctaveLabel = null;
+	private KeyboardView
+	keyboardLowerView = null;
+
+	private KeyboardView
+	keyboardUpperView = null;
 
 	private int
 	midiChannel0 = 0;
@@ -1879,6 +1918,12 @@ System.err.println (inThrowable);
 	private JSlider
 	muteSlider = null;
 
+	private JLabel
+	octaveLowerLabel = null;
+
+	private JLabel
+	octaveUpperLabel = null;
+
 	private JSlider
 	probabilitySlider = null;
 
@@ -1900,11 +1945,14 @@ System.err.println (inThrowable);
 	private JSlider
 	tieSlider = null;
 
-	private KeyboardView
-	keyboardViewUpper = null;
+	private Timer
+	timer = null;
 
-	private JLabel
-	upperOctaveLabel = null;
+	private int
+	timerTickCount = 0;
+
+	private TimerTask
+	timerTask = null;
 
 	private JSlider
 	velocityLowerSlider = null;
@@ -1913,6 +1961,18 @@ System.err.println (inThrowable);
 	velocityUpperSlider = null;
 
 	// PRIVATE DATA
+
+	// INNER CLASSES
+
+	class SequencerTimerTask
+	extends TimerTask
+	{
+		public void
+		run()
+		{
+			SequencerWindow.this.timerTick();
+		}
+	}
 
 }
 
