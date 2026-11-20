@@ -14,10 +14,9 @@ public class Step
 {
 	// PUBLIC CONSTRUCTOR
 
-	public Step(int inOptionCount, int inStepNumber)
+	public Step(int inOptionCount)
 	{
 		this.selectedOption = null;
-		this.stepNumber = inStepNumber;
 
 		this.options = new ArrayList<Option>();
 
@@ -112,9 +111,6 @@ public class Step
 			return;
 		}
 
-		// TODO determine the option probability options
-
-
 		this.selectedOption.note = selectInt
 			(this.selectedOption.noteLower, this.selectedOption.noteUpper);
 
@@ -130,14 +126,10 @@ public class Step
 		// wait, this way we only have one type of ratchet
 		// unless there is a ratchet granularity property
 		this.selectedOption.ratchet = selectBoolean(this.selectedOption.ratchetProbability);
-
 	}
 
 	// PRIVATE DATA
 	
-	private int
-	stepNumber;
-
 	private Option
 	selectedOption;
 

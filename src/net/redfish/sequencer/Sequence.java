@@ -23,7 +23,7 @@ public class Sequence
 
 		for (int i = 0; i < inStepCount; i++)
 		{
-			this.steps.add(new Step(inOptionCount, i));
+			this.steps.add(new Step(inOptionCount));
 		}
 	}
 
@@ -50,6 +50,8 @@ public class Sequence
 	public void
 	selectOption(int inStepNumber)
 	{
+		System.out.println("select option for step " + inStepNumber);
+
 		getStep(inStepNumber).selectOption();
 	}
 

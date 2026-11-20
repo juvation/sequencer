@@ -897,6 +897,8 @@ public class SequencerWindow
 			{
 				System.err.println("not running");
 			}
+
+			sendMidiAllNotesOff();
 		}
 		else if (actionCommand.equalsIgnoreCase("SWAP_PASTE"))
 		{
@@ -1158,6 +1160,8 @@ public class SequencerWindow
 	public void
 	sendMidiAllNotesOff()
 	{
+		System.out.println("sending MIDI all notes off");
+
 		// do we trust this?
 		sendMidiControlChange(0x7b, 0x00);
 	}
@@ -1208,6 +1212,8 @@ public class SequencerWindow
 	public void
 	sendMidiNoteOff(int inNoteNumber)
 	{
+		System.out.println("sendMidiNoteOff(" + inNoteNumber + ")");
+
 		try
 		{
 			// the person responsible for the velocity=0 note off
@@ -1223,6 +1229,8 @@ public class SequencerWindow
 	public void
 	sendMidiNoteOn(int inNoteNumber, int inVelocity)
 	{
+		System.out.println("sendMidiNoteOn(" + inNoteNumber + ", " + inVelocity + ")");
+
 		try
 		{
 			ShortMessage	message = new ShortMessage();
@@ -1257,14 +1265,19 @@ public class SequencerWindow
 	}
 
 	public void
-	setSequenceModified(boolean inModified)
+	setSequenceModified(boolean inModified, boolean inSelectOption)
 	{
 		getRootPane().putClientProperty("windowModified", Boolean.valueOf(inModified));
 		getRootPane().putClientProperty("Window.documentModified", Boolean.valueOf(inModified));
 		
 		this.sequence.setModified(inModified);
 
-		this.sequence.selectOption(0);
+		// if we're running then the option takes its chances when its turn comes up :-)
+		// if not, then recompute step zero to take note of any changes
+		if (inSelectOption && !this.isRunning)
+		{
+			this.sequence.selectOption(0);
+		}
 	}
 	
 	public void
@@ -1276,15 +1289,15 @@ public class SequencerWindow
 		if (stepNumber >= 0 || optionNumber >= 0)
 		{
 			this.table.setValueAt(inOption, optionNumber, stepNumber);
+
+			if (this.changesModifySequence)
+			{
+				setSequenceModified(true, stepNumber == 0);
+			}
 		}
 		else
 		{
 			SequencerWindow.showErrorDialog("Error", "Please select a step option.");
-		}
-
-		if (this.changesModifySequence)
-		{
-			setSequenceModified(true);
 		}
 	}
 
@@ -1298,7 +1311,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1312,7 +1325,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1327,7 +1340,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1342,7 +1355,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1356,7 +1369,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1370,7 +1383,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1384,7 +1397,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1398,7 +1411,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1412,7 +1425,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1426,7 +1439,7 @@ public class SequencerWindow
 
 		if (this.changesModifySequence)
 		{
-			setSequenceModified(true);
+			setSequenceModified(true, inStepNumber == 0);
 		}
 	}
 
@@ -1834,7 +1847,7 @@ System.err.println ("using JavaMIDI for MIDI");
 				fos = new FileOutputStream(this.file);
 				this.sequence.write(fos);
 				
-				setSequenceModified(false);
+				setSequenceModified(false, true);
 				saved = true;
 			}
 			catch(Exception inException)
@@ -1875,7 +1888,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			{
 				// new step
 				case 0:
-					System.out.println("step " + stepNumber + " firing (ratchet? " + selectedOption.ratchet);
+					System.out.println("step " + stepNumber + " firing note " + selectedOption.note + " (ratchet? " + selectedOption.ratchet + ")");
 					sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
 					break;
 				
