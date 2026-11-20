@@ -609,16 +609,11 @@ public class SequencerWindow
 		{
 			boolean	closeWindow = true;
 			
-			// see if any child windows are open
-			Frame[]	frames = Frame.getFrames();
-			
 			if (this.sequence.isModified())
 			{
 				StringBuffer	buffer = new StringBuffer();
 				
-				buffer.append("Save \"");
-				buffer.append(getTitle());
-				buffer.append(" before closing?");
+				buffer.append("Save sequence before closing?");
 				
 				int	response = JOptionPane.showConfirmDialog
 					(this, buffer.toString(), "Confirm", JOptionPane.YES_NO_CANCEL_OPTION);
