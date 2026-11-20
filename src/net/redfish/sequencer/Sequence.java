@@ -6,6 +6,8 @@ package net.redfish.sequencer;
 
 // IMPORTS
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 // PUBLIC CLASS
@@ -55,6 +57,12 @@ public class Sequence
 	setModified(boolean inModified)
 	{
 		this.modified = inModified;
+	}
+
+	public void
+	write(OutputStream outStream)
+	throws IOException
+	{
 	}
 
 	// PRIVATE DATA

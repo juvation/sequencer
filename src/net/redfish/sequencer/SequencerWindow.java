@@ -693,8 +693,7 @@ public class SequencerWindow
 			}
 		}
 		else
-		if (actionCommand.equalsIgnoreCase("SAVE")
-			|| actionCommand.equalsIgnoreCase("SAVE_AS"))
+		if (actionCommand.equalsIgnoreCase("SAVE") || actionCommand.equalsIgnoreCase("SAVE_AS"))
 		{
 			boolean	askForFile = false;
 			
@@ -1026,8 +1025,8 @@ public class SequencerWindow
 	public void
 	setSequenceModified(boolean inModified)
 	{
-		getRootPane().putClientProperty("windowModified", new Boolean(inModified));
-		getRootPane().putClientProperty("Window.documentModified", new Boolean(inModified));
+		getRootPane().putClientProperty("windowModified", Boolean.valueOf(inModified));
+		getRootPane().putClientProperty("Window.documentModified", Boolean.valueOf(inModified));
 		
 		this.sequence.setModified(inModified);
 	}
@@ -1053,19 +1052,23 @@ public class SequencerWindow
 	public void
 	setOptionGateTimeLower(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.gateTimeLower = Math.min(option.gateTimeUpper, this.gateTimeLowerSlider.getValue());
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.gateTimeLower = Math.min(option.gateTimeUpper, this.gateTimeLowerSlider.getValue());
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionGateTimeUpper(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.gateTimeUpper = Math.max(option.gateTimeLower, this.gateTimeUpperSlider.getValue());
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.gateTimeUpper = Math.max(option.gateTimeLower, this.gateTimeUpperSlider.getValue());
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	// called from KeyboardView
@@ -1076,70 +1079,86 @@ public class SequencerWindow
 		option.noteLower = Math.min(option.noteUpper, inValue);
 	
 		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	// called from KeyboardView
 	public void
 	setOptionNoteUpper(int inStepNumber, int inOptionNumber, int inValue)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.noteUpper = Math.max(option.noteLower, inValue);
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.noteUpper = Math.max(option.noteLower, inValue);
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionMuteProbability(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.muteProbability = this.muteSlider.getValue();
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.muteProbability = this.muteSlider.getValue();
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionProbability(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.probability = this.probabilitySlider.getValue();
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.probability = this.probabilitySlider.getValue();
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionRatchetProbability(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.ratchetProbability = this.ratchetSlider.getValue();
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.ratchetProbability = this.ratchetSlider.getValue();
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionTieProbability(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.tieProbability = this.tieSlider.getValue();
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.tieProbability = this.tieSlider.getValue();
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionVelocityLower(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.velocityLower = Math.min(option.velocityUpper, this.velocityLowerSlider.getValue());
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.velocityLower = Math.min(option.velocityUpper, this.velocityLowerSlider.getValue());
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	public void
 	setOptionVelocityUpper(int inStepNumber, int inOptionNumber)
 	{
-			Option	option = getOption(inStepNumber, inOptionNumber);
-			option.velocityUpper = Math.max(option.velocityLower, this.velocityUpperSlider.getValue());
+		Option	option = getOption(inStepNumber, inOptionNumber);
+		option.velocityUpper = Math.max(option.velocityLower, this.velocityUpperSlider.getValue());
 
-			this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+
+		setSequenceModified(true);
 	}
 
 	// PRIVATE METHODS
@@ -1210,7 +1229,7 @@ public class SequencerWindow
 			else
 			{
 				// otherwise we save to the original file
-				// having selected "Save as..."
+				// having selected "Save as..." and cancelled the dialog
 				return false;
 			}
 		}
@@ -1222,7 +1241,7 @@ public class SequencerWindow
 			try
 			{
 				fos = new FileOutputStream(this.file);
-				// this.sequence.write(fos);
+				this.sequence.write(fos);
 				
 				setSequenceModified(false);
 				saved = true;
