@@ -34,8 +34,6 @@ public class OptionCellRenderer
 		// have to set bounds to get horiz alignment to work
 		Rectangle	bounds = getBounds();
 
-		System.out.println("bounds are " + bounds);
-
 		bounds.width = 100;
 		bounds.height = 18;
 
