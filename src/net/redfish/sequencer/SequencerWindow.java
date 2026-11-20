@@ -249,7 +249,7 @@ public class SequencerWindow
 		
 		setTitle("AssQuencer");
 
-		setResizable(true);
+		setResizable(false);
 
 		// LAYOUT
 
@@ -370,7 +370,7 @@ public class SequencerWindow
 		optionPanel.add(mutePanel);
 
 		this.muteSlider = new JSlider(JSlider.VERTICAL);
-		this.muteSlider.setMaximum(127);
+		this.muteSlider.setMaximum(100);
 		this.muteSlider.setMinimum(0);
 		this.muteSlider.setPaintTicks(true);
 		this.muteSlider.setMajorTickSpacing(10);
@@ -388,7 +388,7 @@ public class SequencerWindow
 		optionPanel.add(tiePanel);
 
 		this.tieSlider = new JSlider(JSlider.VERTICAL);
-		this.tieSlider.setMaximum(127);
+		this.tieSlider.setMaximum(100);
 		this.tieSlider.setMinimum(0);
 		this.tieSlider.setPaintTicks(true);
 		this.tieSlider.setMajorTickSpacing(10);
@@ -406,7 +406,7 @@ public class SequencerWindow
 		optionPanel.add(ratchetPanel);
 
 		this.ratchetSlider = new JSlider(JSlider.VERTICAL);
-		this.ratchetSlider.setMaximum(127);
+		this.ratchetSlider.setMaximum(100);
 		this.ratchetSlider.setMinimum(0);
 		this.ratchetSlider.setPaintTicks(true);
 		this.ratchetSlider.setMajorTickSpacing(10);
@@ -551,6 +551,16 @@ public class SequencerWindow
 		buttonBar.setLayout(new FlowLayout(FlowLayout.CENTER));
 		getContentPane().add(buttonBar, BorderLayout.SOUTH);
 		
+		JButton	startButton = new JButton("Start");
+		startButton.setActionCommand("START");
+		startButton.addActionListener(this);
+		buttonBar.add(startButton);
+
+		JButton	stopButton = new JButton("Stop");
+		stopButton.setActionCommand("STOP");
+		stopButton.addActionListener(this);
+		buttonBar.add(stopButton);
+
 		JButton	saveButton = new JButton("Save Sequence");
 		saveButton.setActionCommand("SAVE");
 		saveButton.addActionListener(this);
@@ -671,6 +681,8 @@ public class SequencerWindow
 	{
 		String	actionCommand = inEvent.getActionCommand();
 		
+		System.out.println("SequencerWindow.actionPerformed() " + actionCommand);
+
 		if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
 		{
 			setVisible(false);
@@ -760,71 +772,60 @@ public class SequencerWindow
 				this.upperKeyboardView.repaint();
 			}
 		}
-		/*
 		else
 		if (actionCommand.equalsIgnoreCase("COPY"))
 		{
-			int stepNumber = this.table.getSelectedRow();
-			int optionNumber = this.table.getSelectedColumn();
+			int stepNumber = this.table.getSelectedColumn();
+			int optionNumber = this.table.getSelectedRow();
 
-			if (stepNumber == -1 || optionNumber == -1)
+			if (stepNumber >= 0 && optionNumber >= 0)
 			{
-				SequencerWindow.showErrorDialog
-					("Error", "Please select a step option to copy.");
+				Option	option = getOption(stepNumber, optionNumber);
+				TransferableOption	transferable = new TransferableOption(option);
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
 			}
 			else
 			{
-				int	patchNumber = (row * kTableColumnCount) + column;
-				Patch	patch = this.bank.getPatchCopy(patchNumber);
-				TransferablePatch	transferable = new TransferablePatch(patch);
-				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
+				SequencerWindow.showErrorDialog("Error", "Please select an option to copy.");
 			}
 		}
 		else
 		if (actionCommand.equalsIgnoreCase("PASTE"))
 		{
-			int row = this.table.getSelectedRow();
-			int column = this.table.getSelectedColumn();
-
-			if (row == -1 || column == -1)
+			Clipboard	clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Transferable	transferable = clipboard.getContents(this);
+			
+			if (transferable != null)
 			{
-				SequencerWindow.showErrorDialog
-					("Error", "Please select a patch location to paste.");
+				DataFlavor	flavour = new DataFlavor(Option.class, "AssQuencer Option");
+				
+				try
+				{
+					Object	data = transferable.getTransferData(flavour);
+					
+					if (data != null && data instanceof Option)
+					{
+						Option	option = (Option) data;
+
+						// copy the option!
+						// it might get pasted twice and this is only a reference
+						Option	copy = new Option(option);
+						
+						setOption(copy);
+					}
+					else
+					{
+						System.err.println("data is null or not an Option");
+					}
+				}
+				catch(Exception inException)
+				{
+					System.err.println(inException);
+				}
 			}
 			else
 			{
-				int	patchNumber = (row * kTableColumnCount) + column;
-
-				Clipboard	clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				Transferable	transferable = clipboard.getContents(this);
-				
-				if (transferable != null)
-				{
-					DataFlavor	flavour = new DataFlavor(Patch.class, "Prophet VS Patch");
-					
-					try
-					{
-						Object	data = transferable.getTransferData(flavour);
-						
-						if (data != null && data instanceof Patch)
-						{
-							Patch	patch = (Patch) data;
-							
-							// copy the patch!
-							// it might get pasted twice and this is only a reference
-							Patch	copy = new Patch(patch);
-							
-							// override the patch number in the patch
-							// so it goes in the right place
-							copy.setPatchNumber(patchNumber);
-							setPatch(copy);
-						}
-					}
-					catch(Exception inException)
-					{
-						System.err.println(inException);
-					}
-				}
+				System.err.println("transferable is null");
 			}
 		}
 		else
@@ -835,49 +836,45 @@ public class SequencerWindow
 			int stepNumber = this.table.getSelectedColumn();
 			int optionNumber = this.table.getSelectedRow();
 
-			if (stepNumber == -1 || optionNumber == -1)
+			if (stepNumber >= 0 || optionNumber >= 0)
 			{
-				SequencerWindow.showErrorDialog("Error", "Please select a patch location to swap paste.");
-			}
-			else
-			{
-				int	patchNumber = (row * kTableColumnCount) + column;
+				Option	option = getOption(stepNumber, optionNumber);
 				
 				Clipboard	clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				Transferable	transferable = clipboard.getContents(this);
 				
 				if (transferable != null)
 				{
-					DataFlavor	flavour = new DataFlavor(Patch.class, "Prophet VS Patch");
+					DataFlavor	flavour = new DataFlavor(Option.class, "AssQuencer Option");
 					
 					try
 					{
 						Object	data = transferable.getTransferData(flavour);
 						
-						if (data != null && data instanceof Patch)
+						if (data != null && data instanceof Option)
 						{
-							Patch	pastePatch = (Patch) data;
+							Option	pasteOption = (Option) data;
 							
 							// ok now copy the selection into the clipboard
-							Patch	copyPatch = this.bank.getPatchCopy(patchNumber);
-							transferable = new TransferablePatch(copyPatch);
+							Option	copyOption = getOption(stepNumber, optionNumber);
+							transferable = new TransferableOption(copyOption);
 							Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
 
-							// and now paste the saved patch into place
-							// override the patch number in the patch
-							// so it goes in the right place
-							pastePatch.setPatchNumber(patchNumber);
-							setPatch(pastePatch);
+							// and now paste the saved option into place
+							setOption(pasteOption);
 						}
 					}
 					catch(Exception inException)
 					{
-System.err.println(inException);
+						System.err.println(inException);
 					}
 				}
 			}
+			else
+			{
+				SequencerWindow.showErrorDialog("Error", "Please select an option location to swap paste.");
+			}
 		}
-		*/
 		else
 		{
 			System.err.println("HEY! Unknown action command: " + actionCommand);
@@ -945,9 +942,6 @@ System.err.println(inException);
 	
 	// LIST SELECTION LISTENER IMPLEMENTATION
 	
-	// note we DO allow program changes from bank selection window changes
-	// if the bank isn't in the prophet
-	// it just becomes a handy way of selecting patches :-)
 	public void
 	valueChanged (ListSelectionEvent inEvent)
 	{
@@ -1039,21 +1033,18 @@ System.err.println(inException);
 	}
 	
 	public void
-	setOption(Option inPatch)
+	setOption(Option inOption)
 	{
 		int	stepNumber = this.table.getSelectedColumn();
 		int	optionNumber = this.table.getSelectedRow();
 
-		if (stepNumber == -1 || optionNumber == -1)
+		if (stepNumber >= 0 || optionNumber >= 0)
 		{
-			SequencerWindow.showErrorDialog
-				("Error", "Please select a step option to copy.");
+			this.table.setValueAt(inOption, optionNumber, stepNumber);
 		}
 		else
 		{
-			Option	option = getOption(stepNumber, optionNumber);
-
-			this.table.setValueAt(option, optionNumber, stepNumber);
+			SequencerWindow.showErrorDialog("Error", "Please select a step option.");
 		}
 
 		setSequenceModified(true);

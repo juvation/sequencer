@@ -23,7 +23,7 @@ public class Step
 
 		for (int i = 0; i < inOptionCount; i++)
 		{
-			this.noteOptions.add(new Option(inStepNumber, i));
+			this.noteOptions.add(new Option());
 		}
 	}
 
