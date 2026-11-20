@@ -37,34 +37,37 @@ public class OptionCellRenderer
 		bounds.width = 100;
 		bounds.height = 18;
 
+		Font	largeFont = new Font("Sans Serif", Font.BOLD, 18);
+		Font	smallFont = new Font("Sans Serif", Font.BOLD, 12);
+		
 		this.probabilityLabel = new JLabel();
-		this.probabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 18));
+		this.probabilityLabel.setFont(largeFont);
 		this.probabilityLabel.setBounds(bounds);
 		this.probabilityLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		add(this.probabilityLabel);
 
 		this.noteLabel = new JLabel();
-		this.noteLabel.setFont(new Font("Sans Serif", Font.BOLD, 18));
+		this.noteLabel.setFont(largeFont);
 		add(this.noteLabel);
 		
 		this.velocityLabel = new JLabel();
-		this.velocityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		this.velocityLabel.setFont(smallFont);
 		add(this.velocityLabel);
 
 		this.gateTimeLabel = new JLabel();
-		this.gateTimeLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		this.gateTimeLabel.setFont(smallFont);
 		add(this.gateTimeLabel);
 
 		this.muteProbabilityLabel = new JLabel();
-		this.muteProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		this.muteProbabilityLabel.setFont(smallFont);
 		add(this.muteProbabilityLabel);
 
 		this.tieProbabilityLabel = new JLabel();
-		this.tieProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		this.tieProbabilityLabel.setFont(smallFont);
 		add(this.tieProbabilityLabel);
 
 		this.ratchetProbabilityLabel = new JLabel();
-		this.ratchetProbabilityLabel.setFont(new Font("Sans Serif", Font.BOLD, 12));
+		this.ratchetProbabilityLabel.setFont(smallFont);
 		add(this.ratchetProbabilityLabel);
 
 		// inverted selections plain don't work
