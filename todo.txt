@@ -1,0 +1,11 @@
+
+DONE
+--
+
+
+TODO
+--
+er, the sequencer
+save and load
+midi config changes
+

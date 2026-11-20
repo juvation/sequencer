@@ -1614,18 +1614,18 @@ System.err.println ("using JavaMIDI for MIDI");
 	private void
 	saveMidiChannelPreference ()
 	{
-		Preferences	prefs = Preferences.userRoot ().node (kPreferencesPath);
+		Preferences	prefs = Preferences.userRoot().node(kPreferencesPath);
 		
 		if (this.midiChannelPopup != null)
 		{
-			int	selectedChannelIndex = this.midiChannelPopup.getSelectedIndex ();
+			int	selectedChannelIndex = this.midiChannelPopup.getSelectedIndex();
 
 			if (selectedChannelIndex == -1)
 			{
 				selectedChannelIndex = 0;
 			}
 
-			prefs.putInt ("midiChannel", selectedChannelIndex + 1);
+			prefs.putInt("midiChannel", selectedChannelIndex + 1);
 			
 			// and update our local cache
 			this.midiChannel0 = selectedChannelIndex;
