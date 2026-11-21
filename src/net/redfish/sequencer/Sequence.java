@@ -118,10 +118,11 @@ public class Sequence
 	
 		try
 		{
+			// careful here, the static stringifier method doesn't allow tarting up
 			OurJSONStringifier	stringifier = new OurJSONStringifier();
 			stringifier.setTartUp(true);
 			
-			stringifier.stringify(sequenceMap, osw, 2);
+			stringifier.stringifyObject(sequenceMap, osw, 2);
 		}
 		finally
 		{
