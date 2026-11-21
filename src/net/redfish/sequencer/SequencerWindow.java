@@ -1632,7 +1632,7 @@ public class SequencerWindow
 			this.sequence.read(fis);
 			
 			this.file = file;
-			setSequenceModified(false, false);
+			setSequenceModified(false, true);
 			this.table.revalidate();
 			this.table.repaint();
 
