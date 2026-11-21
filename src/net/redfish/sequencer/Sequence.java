@@ -8,7 +8,13 @@ package net.redfish.sequencer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import hm.mono.OurJSONStringifier;
 
 // PUBLIC CLASS
 
@@ -19,6 +25,9 @@ public class Sequence
 	
 	public Sequence(int inStepCount, int inOptionCount)
 	{
+		this.stepCount = inStepCount;
+		this.optionCount = inOptionCount;
+
 		this.steps = new ArrayList<Step>();
 
 		for (int i = 0; i < inStepCount; i++)
@@ -65,12 +74,71 @@ public class Sequence
 	write(OutputStream outStream)
 	throws IOException
 	{
+		Map<String, Object>	sequenceMap = new HashMap<String, Object>();
+
+		List<Object>	stepsList = new ArrayList<Object>();
+		sequenceMap.put("steps", stepsList);
+
+		for (int stepNumber = 0; stepNumber < this.stepCount; stepNumber++)
+		{
+			Step	step = getStep(stepNumber);
+
+			Map<String, Object>	stepMap = new HashMap<String, Object>();
+			stepsList.add(stepMap);
+
+			List<Object>	optionsList = new ArrayList<Object>();
+			stepMap.put("options", optionsList);
+
+			for (int optionNumber = 0; optionNumber < this.optionCount; optionNumber++)
+			{
+				Option	option = step.getOption(optionNumber);
+
+				Map<String, Object>	optionMap = new HashMap<String, Object>();
+
+				optionMap.put("probability", option.probability);
+
+				optionMap.put("muteProbability", option.muteProbability);
+				optionMap.put("tieProbability", option.tieProbability);
+				optionMap.put("ratchetProbability", option.ratchetProbability);
+
+				optionMap.put("noteLower", option.noteLower);
+				optionMap.put("noteUpper", option.noteUpper);
+
+				optionMap.put("velocityLower", option.velocityLower);
+				optionMap.put("velocityUpper", option.velocityUpper);
+
+				optionMap.put("gateTimeLower", option.gateTimeLower);
+				optionMap.put("gateTimeUpper", option.gateTimeUpper);
+				
+				optionsList.add(optionMap);				
+			}
+		}
+
+		OutputStreamWriter	osw = new OutputStreamWriter(outStream);
+	
+		try
+		{
+			OurJSONStringifier	stringifier = new OurJSONStringifier();
+			stringifier.setTartUp(true);
+			
+			stringifier.stringify(sequenceMap, osw, 2);
+		}
+		finally
+		{
+			osw.close();
+		}
 	}
 
 	// PRIVATE DATA
 	
 	private boolean
 	modified = false;
+
+	private int
+	optionCount = 0;
+
+	private int
+	stepCount = 0;
 
 	private ArrayList<Step>
 	steps;

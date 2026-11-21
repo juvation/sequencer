@@ -1847,7 +1847,7 @@ System.err.println ("using JavaMIDI for MIDI");
 				fos = new FileOutputStream(this.file);
 				this.sequence.write(fos);
 				
-				setSequenceModified(false, true);
+				setSequenceModified(false, false);
 				saved = true;
 			}
 			catch(Exception inException)

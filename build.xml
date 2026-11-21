@@ -55,7 +55,7 @@
 		<javac
 			srcdir="${source.dir}"
 			destdir="${classes.dir}"
-			classpath="${classes.dir}:${lib.dir}/coremidi4j-1.6.jar"
+			classpath="${classes.dir}:${lib.dir}/coremidi4j-1.6.jar:${lib.dir}/monohm.jar"
 			debug="on"
 			source="1.8"
 			target="1.8"
@@ -96,7 +96,7 @@
 		name="run"
 		depends="jar"
 		>
-		<java classname="net.redfish.sequencer.SequencerWindow" classpath="sequencer.jar:lib/coremidi4j-1.6.jar" fork="true">
+		<java classname="net.redfish.sequencer.SequencerWindow" classpath="sequencer.jar:lib/coremidi4j-1.6.jar:lib/monohm.jar" fork="true">
     </java>
 	</target>
 	
