@@ -121,6 +121,92 @@ public class SequencerWindow
 	// PUBLIC STATIC METHODS
 
 	public static File
+	getFileForOpen (JFrame inFrame, String inTitle)
+	{
+		File	selectedFile = null;
+		
+		String	osName = System.getProperty ("os.name");
+
+		if (osName.startsWith ("Mac"))
+		{
+			FileDialog	openDialog = new FileDialog
+				(inFrame, inTitle, FileDialog.LOAD);
+			
+			String	directory = sPrefs.get
+				("fileDialogDirectory", null);
+			
+			if (directory == null)
+			{
+				openDialog.setDirectory (".");
+			}
+			else
+			{
+				openDialog.setDirectory (directory);
+			}
+			
+			openDialog.setVisible (true);
+			
+			String	file = openDialog.getFile ();
+			
+			if (file != null)
+			{
+				directory = openDialog.getDirectory ();
+				
+				if (directory != null)
+				{
+					String	path = null;
+					
+					if (directory.endsWith (File.separator))
+					{
+						path = directory + file;
+					}
+					else
+					{
+						path = directory + File.separatorChar + file;
+					}
+					
+					selectedFile = new File (path);
+					
+					// set the directory for future opens
+					sPrefs.put ("fileDialogDirectory", directory);
+				}
+			}
+		}
+		else
+		{
+			JFileChooser	openDialog = new JFileChooser ();
+
+			String	directory = sPrefs.get ("fileDialogDirectory", null);
+			
+			if (directory == null)
+			{
+				openDialog.setCurrentDirectory (new File ("."));
+			}
+			else
+			{
+				openDialog.setCurrentDirectory (new File (directory));
+			}
+			
+			openDialog.setDialogTitle (inTitle);
+			openDialog.setFileSelectionMode (JFileChooser.FILES_ONLY);
+			openDialog.setMultiSelectionEnabled (false);
+			openDialog.setDragEnabled (true);
+
+			int	response = openDialog.showOpenDialog (inFrame);
+
+			if (response == JFileChooser.APPROVE_OPTION)
+			{
+				selectedFile = openDialog.getSelectedFile ();
+
+				// set the directory for future opens
+				sPrefs.put ("fileDialogDirectory", selectedFile.getParent ());
+			}
+		}
+		
+		return selectedFile;
+	}
+
+	public static File
 	getFileForSave(Object inOwner, String inTitle, String inSelectedFileName)
 	{
 		File	selectedFile = null;
@@ -585,6 +671,11 @@ public class SequencerWindow
 			buttonBar.add(midiDevicePanel);
 		}
 
+		JButton	loadButton = new JButton("Load Sequence");
+		loadButton.setActionCommand("LOAD");
+		loadButton.addActionListener(this);
+		buttonBar.add(loadButton);
+		
 		JButton	saveButton = new JButton("Save Sequence");
 		saveButton.setActionCommand("SAVE");
 		saveButton.addActionListener(this);
@@ -731,6 +822,10 @@ public class SequencerWindow
 			{
 				dispose();
 			}
+		}
+		else if (actionCommand.equalsIgnoreCase("LOAD"))
+		{
+			loadSequence();
 		}
 		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
@@ -1519,6 +1614,49 @@ public class SequencerWindow
 
 	}
 	
+	private void
+	loadSequence()
+	{
+		File	file = SequencerWindow.getFileForOpen(this, "Load");
+		
+		if (file == null)
+		{
+			return;
+		}
+		
+		FileInputStream	fis = null;
+		
+		try
+		{
+			fis = new FileInputStream(file);
+			this.sequence.read(fis);
+			
+			this.file = file;
+			setSequenceModified(false, false);
+			this.table.revalidate();
+			this.table.repaint();
+
+			setTitle("AssQuencer - " + this.file.getName());
+		}
+		catch(Exception inException)
+		{
+			SequencerWindow.showErrorDialog("Error", inException);
+		}
+		finally
+		{
+			if (fis != null)
+			{
+				try
+				{
+					fis.close();
+				}
+				catch(Exception inException)
+				{
+				}
+			}
+		}
+	}
+
 	private JPanel
 	makeMIDIPanel()
 	{
@@ -1849,6 +1987,8 @@ System.err.println ("using JavaMIDI for MIDI");
 				
 				setSequenceModified(false, false);
 				saved = true;
+
+				setTitle("AssQuencer - " + this.file.getName());
 			}
 			catch(Exception inException)
 			{

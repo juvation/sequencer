@@ -6,6 +6,7 @@ package net.redfish.sequencer;
 
 // IMPORTS
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -13,7 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
+import hm.mono.JSON;
+import hm.mono.MapWrapper;
 import hm.mono.OurJSONStringifier;
 
 // PUBLIC CLASS
@@ -70,6 +74,96 @@ public class Sequence
 		this.modified = inModified;
 	}
 
+	public void
+	read(InputStream inStream)
+	throws IOException, NoSuchElementException
+	{
+		Map<String, Object>	sequenceMap = JSON.parse(inStream);
+		Object							stepsObject = sequenceMap.get("steps");
+
+		if (stepsObject == null || !(stepsObject instanceof List))
+		{
+			throw new NoSuchElementException();
+		}
+		
+		List<Object>	stepsList = (List<Object>) stepsObject;
+
+		int	stepsListCount = stepsList.size();
+
+		if (stepsListCount > this.stepCount)
+		{
+			System.err.println("steps list too big, clipping to " + this.stepCount);
+			stepsListCount = this.stepCount;
+		}
+
+		for (int stepNumber = 0; stepNumber < stepsListCount; stepNumber++)
+		{
+			Object	stepObject = stepsList.get(stepNumber);
+
+			if (!(stepObject instanceof Map))
+			{
+				throw new NoSuchElementException("step object is not a Map");
+			}
+
+			Map<String, Object>	stepMap = (Map<String, Object>) stepObject;
+			Object							optionsObject = stepMap.get("options");
+
+			if (optionsObject == null || !(optionsObject instanceof List))
+			{
+				throw new NoSuchElementException();
+			}
+
+			List<Object>	optionsList = (List<Object>) optionsObject;
+
+			int	optionsListCount = optionsList.size();
+
+			if (optionsListCount > this.optionCount)
+			{
+				System.err.println("options list too big, clipping to " + this.optionCount);
+				optionsListCount = this.optionCount;
+			}
+
+			for (int optionNumber = 0; optionNumber < optionsListCount; optionNumber++)
+			{
+				Object	optionObject = optionsList.get(optionNumber);
+
+				if (!(optionObject instanceof Map))
+				{
+					throw new NoSuchElementException("option object is not a Map");
+				}
+
+				Map<String, Object>	optionMap = (Map<String, Object>) optionObject;
+				MapWrapper	optionWrapper = new MapWrapper(optionMap);
+
+				Option	option = getStep(stepNumber).getOption(optionNumber);
+
+				option.probability = optionWrapper.getIntThrow("probability");
+				option.probability = (int) Math.max(option.probability, 0);
+				option.probability = (int) Math.min(option.probability, 100);
+
+				option.muteProbability = optionWrapper.getIntThrow("muteProbability");
+				option.muteProbability = (int) Math.max(option.muteProbability, 0);
+				option.muteProbability = (int) Math.min(option.muteProbability, 100);
+
+				option.tieProbability = optionWrapper.getIntThrow("tieProbability");
+				option.tieProbability = (int) Math.max(option.tieProbability, 0);
+				option.tieProbability = (int) Math.min(option.tieProbability, 100);
+
+				option.ratchetProbability = optionWrapper.getIntThrow("ratchetProbability");
+				option.ratchetProbability = (int) Math.max(option.ratchetProbability, 0);
+				option.ratchetProbability = (int) Math.min(option.ratchetProbability, 100);
+
+				option.noteLower = optionWrapper.getIntThrow("noteLower");
+				option.noteLower = (int) Math.max(option.noteLower, 0);
+				option.noteLower = (int) Math.min(option.noteLower, 127);
+
+				option.noteUpper = optionWrapper.getIntThrow("noteUpper");
+				option.noteUpper = (int) Math.max(option.noteUpper, 0);
+				option.noteUpper = (int) Math.min(option.noteUpper, 127);
+			}
+		}
+	}
+	
 	public void
 	write(OutputStream outStream)
 	throws IOException
