@@ -948,44 +948,11 @@ public class SequencerWindow
 		}
 		else if (actionCommand.equalsIgnoreCase("START"))
 		{
-			if (this.isRunning)
-			{
-				System.err.println("already running");
-			}
-			else
-			{
-				// HACK hardwire to 120bpm
-				double	periodDouble = (1.0 / 48.0) * 1000;
-				long		period = Math.round(periodDouble);
-
-				// having to make a new timer and task each time is stupid
-				this.timer = new Timer();
-				this.timerTask = new SequencerTimerTask();
-
-				this.timer.schedule(this.timerTask, 0, period);
-
-				this.isRunning = true;
-				this.timerTickCount = 0;
-			}
+			start();
 		}
 		else if (actionCommand.equalsIgnoreCase("STOP"))
 		{
-			if (this.isRunning)
-			{
-				this.timer.cancel();
-				this.timer = null;
-				this.timerTask = null;
-
-				this.isRunning = false;
-
-				System.out.println("timer ran for " + this.timerTickCount + " ticks");
-			}
-			else
-			{
-				System.err.println("not running");
-			}
-
-			sendMidiAllNotesOff();
+			stop();
 		}
 		else if (actionCommand.equalsIgnoreCase("SWAP_PASTE"))
 		{
@@ -1530,6 +1497,53 @@ public class SequencerWindow
 		}
 	}
 
+	public void
+	start()
+	{
+		if (this.isRunning)
+		{
+			System.err.println("already running");
+		}
+		else
+		{
+			// HACK hardwire to 120bpm
+			double	periodDouble = (1.0 / 48.0) * 1000;
+			long		period = Math.round(periodDouble);
+
+			// having to make a new timer and task each time is stupid
+			this.timer = new Timer();
+			this.timerTask = new SequencerTimerTask();
+
+			this.timer.schedule(this.timerTask, 0, period);
+
+			this.isRunning = true;
+			this.timerTickCount = 0;
+		}
+	}
+
+	public void
+	stop()
+	{
+		if (this.isRunning)
+		{
+			this.timer.cancel();
+			this.timer = null;
+			this.timerTask = null;
+
+			this.isRunning = false;
+
+			System.out.println("timer ran for " + this.timerTickCount + " ticks");
+		}
+		else
+		{
+			System.err.println("not running");
+		}
+
+		this.currentOption.reset();
+
+		sendMidiAllNotesOff();
+	}
+	
 	// PRIVATE METHODS
 	
 	private void
@@ -2010,89 +2024,127 @@ System.err.println ("using JavaMIDI for MIDI");
 	timerTick()
 	{
 		int			stepNumber = this.timerTickCount / 12;
-		Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
+		int			subtick = this.timerTickCount % 12;
+		Option	tiedOption = null;
 
-		if (selectedOption != null)
+		if (subtick == 0)
 		{
-			int	subtick = this.timerTickCount % (24 / 2);
-		
-			switch(subtick)
-			{
-				// new step
-				case 0:
-					System.out.println("step " + stepNumber + " firing note " + selectedOption.note + " (ratchet? " + selectedOption.ratchet + ")");
-					sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
-					break;
-				
-				// if ratcheting then turn off note 1 here
-				case 2:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOff(selectedOption.note);
-					}
-					break;
-					
-				// if ratcheting then turn on note 2 here
-				case 3:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
-					}
-					break;
-					
-				// if ratcheting then turn off note 2 here
-				case 5:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOff(selectedOption.note);
-					}
-					break;
-					
-				// if ratcheting then turn on note 3 here
-				case 6:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
-					}
-					break;
-	
-				// if ratcheting then turn off note 3 here
-				case 8:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOff(selectedOption.note);
-					}
-					break;
-				
-				// if ratcheting then turn on note 4 here
-				case 9:
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOn(selectedOption.note, selectedOption.velocity);
-					}
-					break;
-					
-				// if ratcheting then turn off note 4 here
-				case 11:
-				{
-					if (selectedOption.ratchet)
-					{
-						sendMidiNoteOff(selectedOption.note);
-					}
+			// new step
 
-					// and this is a good spot to calculate the next step's option
-					this.sequence.selectOption((stepNumber + 1) % 16);
-					break;
-			}
-			}
-	
-			// now sort out whether to turn a non-ratchet note off
-			if (!selectedOption.ratchet)
+			if (this.currentOption.tie)
 			{
-				if (subtick == selectedOption.gateTime / 12)
+				tiedOption = this.currentOption;
+			}
+
+			Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
+
+			if (selectedOption != null)
+			{
+				// cache the option for the duration of this step
+				this.currentOption.copyFrom(selectedOption);
+			}
+		}
+
+		switch(subtick)
+		{
+			// new step
+			case 0:
+				if (this.currentOption != null)
 				{
-					sendMidiNoteOff(selectedOption.note);
+					System.out.println("step " + stepNumber + " firing note " + this.currentOption.note + " (ratchet? " + this.currentOption.ratchet + ")");
+					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
 				}
+
+				// see if we have to turn the previously tied note off
+				// but only if it's a different note! lol
+				boolean	sendTieNoteOff = false;
+
+				if (tiedOption != null)
+				{
+					sendTieNoteOff = tiedOption.tie;
+
+					if (this.currentOption != null && this.currentOption.note == tiedOption.note)
+					{
+						sendTieNoteOff = false;
+					}
+				}
+						
+				if (sendTieNoteOff)
+				{
+					sendMidiNoteOff(tiedOption.note);
+				}
+				break;
+			
+			// if ratcheting then turn off note 1 here
+			case 2:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOff(this.currentOption.note);
+				}
+				break;
+				
+			// if ratcheting then turn on note 2 here
+			case 3:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
+				}
+				break;
+				
+			// if ratcheting then turn off note 2 here
+			case 5:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOff(this.currentOption.note);
+				}
+				break;
+				
+			// if ratcheting then turn on note 3 here
+			case 6:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
+				}
+				break;
+
+			// if ratcheting then turn off note 3 here
+			case 8:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOff(this.currentOption.note);
+				}
+				break;
+			
+			// if ratcheting then turn on note 4 here
+			case 9:
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
+				}
+				break;
+				
+			// if ratcheting then turn off note 4 here
+			case 11:
+			{
+				if (this.currentOption != null && this.currentOption.ratchet)
+				{
+					sendMidiNoteOff(this.currentOption.note);
+				}
+
+				// and this is a good spot to calculate the next step's option
+				this.sequence.selectOption((stepNumber + 1) % 16);
+
+				break;
+			}
+		}
+
+		// now sort out whether to turn a non-ratchet note off
+		if (this.currentOption != null && !this.currentOption.ratchet && !this.currentOption.tie)
+		{
+			// TODO should this be GTE?
+			if (subtick == this.currentOption.gateTime / 12)
+			{
+				sendMidiNoteOff(this.currentOption.note);
 			}
 		}
 	
@@ -2131,6 +2183,10 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	private boolean
 	changesModifySequence = false;
+
+	// cached from the selected option while we are processing that step
+	private Option
+	currentOption = new Option();
 
 	private File
 	file = null;
