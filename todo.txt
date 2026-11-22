@@ -1,11 +1,14 @@
 
 DONE
 --
+sequencer
+sequencer ratchets
+save and load
 
 
 TODO
 --
-er, the sequencer
-save and load
+sequencer caches option during option handling
+sequencer tie and mute and gate time
 midi config changes
 

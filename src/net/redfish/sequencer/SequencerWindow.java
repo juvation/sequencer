@@ -129,8 +129,7 @@ public class SequencerWindow
 
 		if (osName.startsWith ("Mac"))
 		{
-			FileDialog	openDialog = new FileDialog
-				(inFrame, inTitle, FileDialog.LOAD);
+			FileDialog	openDialog = new FileDialog(inFrame, inTitle, FileDialog.LOAD);
 			
 			String	directory = sPrefs.get
 				("fileDialogDirectory", null);
@@ -671,10 +670,10 @@ public class SequencerWindow
 			buttonBar.add(midiDevicePanel);
 		}
 
-		JButton	loadButton = new JButton("Load Sequence");
-		loadButton.setActionCommand("LOAD");
-		loadButton.addActionListener(this);
-		buttonBar.add(loadButton);
+		JButton	openButton = new JButton("Open Sequence...");
+		openButton.setActionCommand("OPEN");
+		openButton.addActionListener(this);
+		buttonBar.add(openButton);
 		
 		JButton	saveButton = new JButton("Save Sequence");
 		saveButton.setActionCommand("SAVE");
@@ -823,10 +822,6 @@ public class SequencerWindow
 				dispose();
 			}
 		}
-		else if (actionCommand.equalsIgnoreCase("LOAD"))
-		{
-			loadSequence();
-		}
 		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
 			sendMidiAllNotesOff();
@@ -898,6 +893,10 @@ public class SequencerWindow
 				this.keyboardUpperView.repaint();
 			}
 		}
+		else if (actionCommand.equalsIgnoreCase("OPEN"))
+		{
+			loadSequence();
+		}
 		else if (actionCommand.equalsIgnoreCase("PASTE"))
 		{
 			Clipboard	clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -940,16 +939,9 @@ public class SequencerWindow
 		{
 			boolean	askForFile = false;
 			
-			if (actionCommand.equalsIgnoreCase("SAVE_AS"))
+			if (actionCommand.equalsIgnoreCase("SAVE_AS") || this.file == null)
 			{
 				askForFile = true;
-			}
-			else
-			{
-				if (this.file == null)
-				{
-					askForFile = true;
-				}
 			}
 			
 			saveSequence(askForFile);
