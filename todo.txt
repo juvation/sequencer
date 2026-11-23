@@ -7,11 +7,10 @@ save and load
 sequencer caches option during option handling
 sequencer ties
 sequencer mutes
+split bottom UI bar into two
 
 
 TODO
 --
 sequencer gate time
 midi config changes
-split bottom UI bar into two
-

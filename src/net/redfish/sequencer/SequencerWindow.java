@@ -648,57 +648,69 @@ public class SequencerWindow
 
 		// TOOLBAR
 
-		JPanel	buttonBar = new JPanel();
-		buttonBar.setLayout(new FlowLayout(FlowLayout.CENTER));
-		getContentPane().add(buttonBar, BorderLayout.SOUTH);
+		JPanel	toolBar = new JPanel();
+		toolBar.setLayout(new BoxLayout(toolBar, BoxLayout.Y_AXIS));
+		getContentPane().add(toolBar, BorderLayout.SOUTH);
 		
-		JButton	startButton = new JButton("Start");
-		startButton.setActionCommand("START");
-		startButton.addActionListener(this);
-		buttonBar.add(startButton);
+		// upper toolbar - MIDI config
 
-		JButton	stopButton = new JButton("Stop");
-		stopButton.setActionCommand("STOP");
-		stopButton.addActionListener(this);
-		buttonBar.add(stopButton);
+		JPanel	upperToolBar = new JPanel();
+		upperToolBar.setLayout(new FlowLayout(FlowLayout.CENTER));
+		toolBar.add(upperToolBar);
 
 		// add the MIDI configuration panel
 		JPanel	midiDevicePanel = makeMIDIPanel();
 		
 		if (midiDevicePanel != null)
 		{
-			buttonBar.add(midiDevicePanel);
+			upperToolBar.add(midiDevicePanel);
 		}
+
+		// lower toolbar - actions
+		
+		JPanel	lowerToolBar = new JPanel();
+		lowerToolBar.setLayout(new FlowLayout(FlowLayout.CENTER));
+		toolBar.add(lowerToolBar);
+
+		JButton	startButton = new JButton("Start");
+		startButton.setActionCommand("START");
+		startButton.addActionListener(this);
+		lowerToolBar.add(startButton);
+
+		JButton	stopButton = new JButton("Stop");
+		stopButton.setActionCommand("STOP");
+		stopButton.addActionListener(this);
+		lowerToolBar.add(stopButton);
 
 		JButton	openButton = new JButton("Open Sequence...");
 		openButton.setActionCommand("OPEN");
 		openButton.addActionListener(this);
-		buttonBar.add(openButton);
+		lowerToolBar.add(openButton);
 		
 		JButton	saveButton = new JButton("Save Sequence");
 		saveButton.setActionCommand("SAVE");
 		saveButton.addActionListener(this);
-		buttonBar.add(saveButton);
+		lowerToolBar.add(saveButton);
 		
 		JButton	saveAsButton = new JButton("Save Sequence as...");
 		saveAsButton.setActionCommand("SAVE_AS");
 		saveAsButton.addActionListener(this);
-		buttonBar.add(saveAsButton);
+		lowerToolBar.add(saveAsButton);
 		
 		JButton	copyButton = new JButton("Copy Option");
 		copyButton.setActionCommand("COPY");
 		copyButton.addActionListener(this);
-		buttonBar.add(copyButton);
+		lowerToolBar.add(copyButton);
 		
 		JButton	pasteButton = new JButton("Paste Option");
 		pasteButton.setActionCommand("PASTE");
 		pasteButton.addActionListener(this);
-		buttonBar.add(pasteButton);
+		lowerToolBar.add(pasteButton);
 		
 		JButton	swapPasteButton = new JButton("Swap Paste Option");
 		swapPasteButton.setActionCommand("SWAP_PASTE");
 		swapPasteButton.addActionListener(this);
-		buttonBar.add(swapPasteButton);
+		lowerToolBar.add(swapPasteButton);
 		
 		pack();
 
