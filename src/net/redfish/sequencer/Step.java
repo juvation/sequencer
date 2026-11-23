@@ -121,8 +121,19 @@ public class Step
 			(this.selectedOption.gateTimeLower, this.selectedOption.gateTimeUpper);
 
 		this.selectedOption.mute = selectBoolean(this.selectedOption.muteProbability);
+
+		if (!this.selectedOption.mute)
+		{
+			this.selectedOption.mute = this.selectedOption.gateTime == 0;
+		}
+
 		this.selectedOption.tie = selectBoolean(this.selectedOption.tieProbability);
-		
+
+		if (!this.selectedOption.tie)
+		{
+			this.selectedOption.tie = this.selectedOption.gateTime == 100;
+		}
+
 		// wait, this way we only have one type of ratchet
 		// unless there is a ratchet granularity property
 		this.selectedOption.ratchet = selectBoolean(this.selectedOption.ratchetProbability);

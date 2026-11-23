@@ -1635,6 +1635,8 @@ public class SequencerWindow
 		
 		try
 		{
+			System.err.println("opening file " + file.getAbsolutePath());
+
 			fis = new FileInputStream(file);
 			this.sequence.read(fis);
 			
@@ -2021,57 +2023,61 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	// this goes off at 24ppqn
 	// HACK hardwire steps to quaver length
+	// who wins in mute, tie, and ratchet?
+	// currently mute > tie > ratchet
 	private void
 	timerTick()
 	{
 		int			stepNumber = this.timerTickCount / 12;
 		int			subtick = this.timerTickCount % 12;
-		Option	tiedOption = new Option();
-
-		if (subtick == 0)
-		{
-			// new step
-
-			if (this.currentOption.tie)
-			{
-				tiedOption.copyFrom(this.currentOption);
-			}
-
-			Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
-
-			if (selectedOption != null)
-			{
-				this.currentOption.copyFrom(selectedOption);
-			}
-		}
 
 		switch(subtick)
 		{
 			// new step
 			case 0:
+			{
+				if (this.currentOption.tie)
+				{
+					this.tiedOption.copyFrom(this.currentOption);
+				}
+				else
+				{
+					this.tiedOption.reset();
+				}
+
+				Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
+	
+				if (selectedOption != null)
+				{
+					this.currentOption.copyFrom(selectedOption);
+				}
 				if (this.currentOption != null)
 				{
-					System.err.println("step: " + stepNumber + " firing note: " + this.currentOption.note
+					System.err.println("step: " + stepNumber
+						+ " note: " + this.currentOption.note
 						+ " mute: " + this.currentOption.mute
 						+ " tie: " + this.currentOption.tie
-						+ " ratchet: " + this.currentOption.ratchet
-						+ ")");
-					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
+						+ " ratchet: " + this.currentOption.ratchet);
+
+					if (!this.currentOption.mute)
+					{
+						sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
+					}
 				}
 
 				// see if we have to turn the previously tied note off
 				// but only if it's a different note! lol
 
-				if ((tiedOption != null && tiedOption.tie)
-					&& (this.currentOption == null || this.currentOption.note != tiedOption.note))
+				if ((!this.tiedOption.mute && this.tiedOption.tie)
+					&& (this.currentOption == null || this.currentOption.note != this.tiedOption.note))
 				{
 					sendMidiNoteOff(tiedOption.note);
 				}
 				break;
-			
+			}
 			// if ratcheting then turn off note 1 here
 			case 2:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOff(this.currentOption.note);
 				}
@@ -2079,7 +2085,7 @@ System.err.println ("using JavaMIDI for MIDI");
 				
 			// if ratcheting then turn on note 2 here
 			case 3:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
 				}
@@ -2087,7 +2093,7 @@ System.err.println ("using JavaMIDI for MIDI");
 				
 			// if ratcheting then turn off note 2 here
 			case 5:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOff(this.currentOption.note);
 				}
@@ -2095,7 +2101,7 @@ System.err.println ("using JavaMIDI for MIDI");
 				
 			// if ratcheting then turn on note 3 here
 			case 6:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
 				}
@@ -2103,7 +2109,7 @@ System.err.println ("using JavaMIDI for MIDI");
 
 			// if ratcheting then turn off note 3 here
 			case 8:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOff(this.currentOption.note);
 				}
@@ -2111,7 +2117,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			
 			// if ratcheting then turn on note 4 here
 			case 9:
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
 				}
@@ -2120,7 +2126,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			// if ratcheting then turn off note 4 here
 			case 11:
 			{
-				if (this.currentOption != null && this.currentOption.ratchet)
+				if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && this.currentOption.ratchet)
 				{
 					sendMidiNoteOff(this.currentOption.note);
 				}
@@ -2133,7 +2139,7 @@ System.err.println ("using JavaMIDI for MIDI");
 		}
 
 		// now sort out whether to turn a non-ratchet note off
-		if (this.currentOption != null && !this.currentOption.ratchet && !this.currentOption.tie)
+		if (this.currentOption != null && !this.currentOption.mute && !this.currentOption.tie && !this.currentOption.ratchet)
 		{
 			// TODO should this be GTE?
 			if (subtick == this.currentOption.gateTime / 12)
@@ -2257,6 +2263,9 @@ System.err.println ("using JavaMIDI for MIDI");
 	private JTable
 	table = null;
 	
+	private Option
+	tiedOption = new Option();
+
 	private JSlider
 	tieSlider = null;
 

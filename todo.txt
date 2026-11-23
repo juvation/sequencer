@@ -4,11 +4,14 @@ DONE
 sequencer
 sequencer ratchets
 save and load
+sequencer caches option during option handling
+sequencer ties
+sequencer mutes
 
 
 TODO
 --
-sequencer caches option during option handling
-sequencer tie and mute and gate time
+sequencer gate time
 midi config changes
+split bottom UI bar into two
 
