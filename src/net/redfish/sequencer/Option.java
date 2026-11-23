@@ -48,6 +48,8 @@ public class Option
 		this.tie = inCopy.tie;
 		this.tieProbability = inCopy.tieProbability;
 
+		this.valid = inCopy.valid;
+
 		this.velocity = inCopy.velocity;
 		this.velocityLower = inCopy.velocityLower;
 		this.velocityUpper = inCopy.velocityUpper;
@@ -75,6 +77,8 @@ public class Option
 		this.tie = false;
 		this.tieProbability = 0;
 
+		this.valid = false;
+
 		this.velocity = 100;
 		this.velocityLower = 100;
 		this.velocityUpper = 100;
@@ -84,57 +88,61 @@ public class Option
 
 	// computed
 	public int
-	gateTime = 50;
+	gateTime;
 
 	public int
-	gateTimeLower = 50;
+	gateTimeLower;
 
 	public int
-	gateTimeUpper = 50;
+	gateTimeUpper;
 
 	// computed
 	public boolean
-	mute = false;
+	mute;
 
 	public int
-	muteProbability = 0;
+	muteProbability;
 
 	// computed
 	public int
-	note = 60;
+	note;
 
 	public int
-	noteLower = 60;
+	noteLower;
 
 	public int
-	noteUpper = 60;
+	noteUpper;
 
 	public int
-	probability = 100;
+	probability;
 
 	// computed
 	public boolean
-	ratchet = false;
+	ratchet;
 
 	public int
-	ratchetProbability = 0;
+	ratchetProbability;
 	
 	// computed
 	public boolean
-	tie = false;
+	tie;
 
 	public int
-	tieProbability = 0;
+	tieProbability;
 	
+	// used by the timer tick
+	public boolean
+	valid = false;
+
 	// computed
 	public int
-	velocity = 100;
+	velocity;
 
 	public int
-	velocityLower = 100;
+	velocityLower;
 
 	public int
-	velocityUpper = 100;
+	velocityUpper;
 
 }
 
