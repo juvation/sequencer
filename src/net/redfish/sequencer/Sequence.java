@@ -61,20 +61,6 @@ public class Sequence
 	}
 
 	public void
-	selectOption(int inStepNumber)
-	{
-		System.out.println("select option for step " + inStepNumber);
-
-		getStep(inStepNumber).selectOption();
-	}
-
-	public void
-	setModified(boolean inModified)
-	{
-		this.modified = inModified;
-	}
-
-	public void
 	read(InputStream inStream)
 	throws IOException, NoSuchElementException
 	{
@@ -164,6 +150,26 @@ public class Sequence
 		}
 	}
 	
+	public void
+	selectOption(int inStepNumber)
+	{
+		System.out.println("select option for step " + inStepNumber);
+
+		getStep(inStepNumber).selectOption();
+	}
+
+	public void
+	setModified(boolean inModified)
+	{
+		this.modified = inModified;
+	}
+
+	public void
+	setOption(int inStepNumber, int inOptionNumber, Option inOption)
+	{
+		getStep(inStepNumber).setOption(inOptionNumber, inOption);
+	}
+
 	public void
 	write(OutputStream outStream)
 	throws IOException

@@ -128,6 +128,12 @@ public class Step
 		this.selectedOption.ratchet = selectBoolean(this.selectedOption.ratchetProbability);
 	}
 
+	public void
+	setOption(int inOptionNumber, Option inOption)
+	{
+		this.options.set(inOptionNumber, inOption);
+	}
+
 	// PRIVATE DATA
 	
 	private Option

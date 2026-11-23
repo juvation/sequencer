@@ -795,7 +795,7 @@ public class SequencerWindow
 	{
 		String	actionCommand = inEvent.getActionCommand();
 		
-		System.out.println("SequencerWindow.actionPerformed(" + actionCommand + ")");
+		System.err.println("SequencerWindow.actionPerformed(" + actionCommand + ")");
 
 		if (actionCommand.equalsIgnoreCase("COPY"))
 		{
@@ -1082,7 +1082,7 @@ public class SequencerWindow
 		{
 			// update the option view here
 
-			System.out.println("ListSelectionListener.valueChanged() to step " + stepNumber + " option " + optionNumber);
+			System.err.println("ListSelectionListener.valueChanged() to step " + stepNumber + " option " + optionNumber);
 
 			Option	option = getOption(stepNumber, optionNumber);
 
@@ -1214,7 +1214,7 @@ public class SequencerWindow
 	public void
 	sendMidiAllNotesOff()
 	{
-		System.out.println("sending MIDI all notes off");
+		System.err.println("sending MIDI all notes off");
 
 		// do we trust this?
 		sendMidiControlChange(0x7b, 0x00);
@@ -1266,7 +1266,7 @@ public class SequencerWindow
 	public void
 	sendMidiNoteOff(int inNoteNumber)
 	{
-		System.out.println("sendMidiNoteOff(" + inNoteNumber + ")");
+		System.err.println("sendMidiNoteOff(" + inNoteNumber + ")");
 
 		try
 		{
@@ -1283,7 +1283,7 @@ public class SequencerWindow
 	public void
 	sendMidiNoteOn(int inNoteNumber, int inVelocity)
 	{
-		System.out.println("sendMidiNoteOn(" + inNoteNumber + ", " + inVelocity + ")");
+		System.err.println("sendMidiNoteOn(" + inNoteNumber + ", " + inVelocity + ")");
 
 		try
 		{
@@ -1342,6 +1342,7 @@ public class SequencerWindow
 
 		if (stepNumber >= 0 || optionNumber >= 0)
 		{
+			this.sequence.setOption(stepNumber, optionNumber, inOption);
 			this.table.setValueAt(inOption, optionNumber, stepNumber);
 
 			if (this.changesModifySequence)
@@ -1532,7 +1533,7 @@ public class SequencerWindow
 
 			this.isRunning = false;
 
-			System.out.println("timer ran for " + this.timerTickCount + " ticks");
+			System.err.println("timer ran for " + this.timerTickCount + " ticks");
 		}
 		else
 		{
@@ -2025,7 +2026,7 @@ System.err.println ("using JavaMIDI for MIDI");
 	{
 		int			stepNumber = this.timerTickCount / 12;
 		int			subtick = this.timerTickCount % 12;
-		Option	tiedOption = null;
+		Option	tiedOption = new Option();
 
 		if (subtick == 0)
 		{
@@ -2033,14 +2034,13 @@ System.err.println ("using JavaMIDI for MIDI");
 
 			if (this.currentOption.tie)
 			{
-				tiedOption = this.currentOption;
+				tiedOption.copyFrom(this.currentOption);
 			}
 
 			Option	selectedOption = this.sequence.getSelectedOption(stepNumber);
 
 			if (selectedOption != null)
 			{
-				// cache the option for the duration of this step
 				this.currentOption.copyFrom(selectedOption);
 			}
 		}
@@ -2051,25 +2051,19 @@ System.err.println ("using JavaMIDI for MIDI");
 			case 0:
 				if (this.currentOption != null)
 				{
-					System.out.println("step " + stepNumber + " firing note " + this.currentOption.note + " (ratchet? " + this.currentOption.ratchet + ")");
+					System.err.println("step: " + stepNumber + " firing note: " + this.currentOption.note
+						+ " mute: " + this.currentOption.mute
+						+ " tie: " + this.currentOption.tie
+						+ " ratchet: " + this.currentOption.ratchet
+						+ ")");
 					sendMidiNoteOn(this.currentOption.note, this.currentOption.velocity);
 				}
 
 				// see if we have to turn the previously tied note off
 				// but only if it's a different note! lol
-				boolean	sendTieNoteOff = false;
 
-				if (tiedOption != null)
-				{
-					sendTieNoteOff = tiedOption.tie;
-
-					if (this.currentOption != null && this.currentOption.note == tiedOption.note)
-					{
-						sendTieNoteOff = false;
-					}
-				}
-						
-				if (sendTieNoteOff)
+				if ((tiedOption != null && tiedOption.tie)
+					&& (this.currentOption == null || this.currentOption.note != tiedOption.note))
 				{
 					sendMidiNoteOff(tiedOption.note);
 				}
