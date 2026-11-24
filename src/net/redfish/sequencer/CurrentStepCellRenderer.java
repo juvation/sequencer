@@ -31,6 +31,8 @@ public class CurrentStepCellRenderer
 	{
 		// for centring the label
 		setLayout(new GridBagLayout());
+
+		// no idea what this does
 		setOpaque(false);
 
 		Font	largeFont = new Font("Sans Serif", Font.BOLD, 18);
@@ -52,6 +54,8 @@ public class CurrentStepCellRenderer
 	getTableCellRendererComponent(JTable inTable, Object inValue,
 		boolean inIsSelected, boolean inHasFocus, int inRow, int inColumn)
 	{
+		System.err.println("getTableCellRendererComponent() for column " + inColumn);
+
 		Integer	step = (Integer) inValue;
 
 		try
@@ -63,18 +67,24 @@ public class CurrentStepCellRenderer
 
 			if (inIsSelected)
 			{
-				setBackground(Color.RED);
-				this.stepLabel.setBackground(Color.RED);
+				System.err.println("selected: setting foreground to " + inTable.getSelectionForeground());
+				System.err.println("selected: setting background to " + inTable.getSelectionBackground());
+
+				setForeground(inTable.getSelectionForeground());
+				setBackground(inTable.getSelectionBackground());
 			}
 			else
 			{
-				setBackground(Color.WHITE);
-				this.stepLabel.setBackground(Color.WHITE);
+				System.err.println("not selected: setting foreground to " + inTable.getForeground());
+				System.err.println("not selected: setting background to " + inTable.getBackground());
+
+				setForeground(inTable.getForeground());
+				setBackground(inTable.getBackground());
 			}
 
 			this.stepLabel.setText(Integer.toString(step));
 		}
-		catch(Exception inException)
+		catch (Exception inException)
 		{
 			System.err.println(inException);
 		}

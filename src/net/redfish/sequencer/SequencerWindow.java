@@ -396,8 +396,11 @@ public class SequencerWindow
 
 		getContentPane().add(this.currentStepTable, BorderLayout.NORTH);
 
-		this.currentStepTable.setCellSelectionEnabled(false);
-		this.currentStepTable.setSelectionBackground(Color.BLACK);
+		this.currentStepTable.setColumnSelectionAllowed(true);
+		this.currentStepTable.setRowSelectionAllowed(false);
+		this.currentStepTable.setForeground(Color.BLACK);
+		this.currentStepTable.setBackground(Color.WHITE);
+		this.currentStepTable.setSelectionForeground(Color.BLACK);
 		this.currentStepTable.setSelectionBackground(Color.RED);
 		this.currentStepTable.setDefaultEditor(Object.class, null);
 		this.currentStepTable.setDefaultRenderer(Object.class, new CurrentStepCellRenderer());
