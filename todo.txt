@@ -8,9 +8,10 @@ sequencer caches option during option handling
 sequencer ties
 sequencer mutes
 split bottom UI bar into two
+midi sync
 
 
 TODO
 --
-sequencer gate time
 midi config changes
+
