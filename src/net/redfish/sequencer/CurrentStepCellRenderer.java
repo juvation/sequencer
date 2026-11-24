@@ -59,6 +59,8 @@ public class CurrentStepCellRenderer
 			// maybe we don't have borders in the current step indicator
 			// setBorder(this.border);
 
+			// THIS NEVER WORKS
+
 			if (inIsSelected)
 			{
 				setBackground(Color.RED);

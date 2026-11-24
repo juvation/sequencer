@@ -1,8 +1,9 @@
 **/.DS_Store
 TimerTest.class
 TimerTest/
-build/
+/build/
 midicl/dep/
 midicl/lib/
 midicl/obj/
+/sequencer
 sequencer.jar
