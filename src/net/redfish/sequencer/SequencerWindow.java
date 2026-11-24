@@ -1236,8 +1236,33 @@ public class SequencerWindow
 	}
 	
 	public void
+	sendMidiClock()
+	{
+		if (this.isRunning)
+		{
+			this.timerTick();
+
+			// System.err.println("midi clock received");
+		}
+		else
+		{
+			System.err.println("midi clock received while not running");
+		}
+	}
+	
+	public void
 	sendMidiContinue()
 	{
+		if (!this.isRunning)
+		{
+			System.err.println("midi continue received");
+
+			this.isRunning = true;
+		}
+		else
+		{
+			System.err.println("midi continue received while running");
+		}
 	}
 	
 	public void
@@ -1321,11 +1346,33 @@ public class SequencerWindow
 	public void
 	sendMidiStart()
 	{
+		if (!this.isRunning)
+		{
+			System.err.println("midi start received");
+			
+			this.timerTickCount = 0;
+			this.isRunning = true;
+		}
+		else
+		{
+			System.err.println("midi start received while running");
+		}
 	}
 
 	public void
 	sendMidiStop()
 	{
+		if (this.isRunning)
+		{
+			System.err.println("midi stop received");
+
+			// don't reset the tick count here, as continue requires it
+			this.isRunning = false;
+		}
+		else
+		{
+			System.err.println("midi stop received while not running");
+		}
 	}
 
 	public void
@@ -2091,6 +2138,8 @@ System.err.println ("using JavaMIDI for MIDI");
 					&& (this.currentOption == null || this.currentOption.note != this.tiedOption.note))
 				{
 					sendMidiNoteOff(tiedOption.note);
+
+					this.tiedOption.valid = false;
 				}
 				break;
 			}
@@ -2204,6 +2253,7 @@ System.err.println ("using JavaMIDI for MIDI");
 	changesModifySequence = false;
 
 	// cached from the selected option while we are processing that step
+	// a member so we don't allocate during the timer tick
 	private Option
 	currentOption = new Option();
 
@@ -2282,6 +2332,7 @@ System.err.println ("using JavaMIDI for MIDI");
 	private JTable
 	table = null;
 	
+	// a member so we don't allocate during the timer tick
 	private Option
 	tiedOption = new Option();
 
