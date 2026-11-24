@@ -5,5 +5,4 @@ build/
 midicl/dep/
 midicl/lib/
 midicl/obj/
-sequencer
 sequencer.jar

@@ -71,6 +71,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -358,22 +359,62 @@ public class SequencerWindow
 
 		// CONTENTS
 		
-		// NORTH PANE - BANK STATUS
+		// NORTH PANE - CURRENT STEP STATUS
 		
-		JPanel	statusPanel = new JPanel();
-		statusPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-		getContentPane().add(statusPanel, BorderLayout.NORTH);
-		
-		this.statusLabel = new JLabel();
-		statusPanel.add(this.statusLabel);
-		
+		this.currentStepTable = new JTable(1, 16)
+		{
+			public Dimension
+			getPreferredScrollableViewportSize()
+			{
+				return getPreferredSize();
+			}
+
+			public Dimension
+			getMaximumSize()
+			{
+				return new Dimension(100, 50);
+			}
+
+			public Dimension
+			getMinimumSize()
+			{
+				return new Dimension(100, 50);
+			}
+
+			public Dimension
+			getPreferredSize()
+			{
+				return new Dimension(100, 50);
+			}
+			
+			public boolean
+			isCellEditable(int inRow, int inColumn)
+			{
+				return false;
+			}
+		};
+
+		getContentPane().add(this.currentStepTable, BorderLayout.NORTH);
+
+		this.currentStepTable.setCellSelectionEnabled(false);
+		this.currentStepTable.setSelectionBackground(Color.BLACK);
+		this.currentStepTable.setSelectionBackground(Color.RED);
+		this.currentStepTable.setDefaultEditor(Object.class, null);
+		this.currentStepTable.setDefaultRenderer(Object.class, new CurrentStepCellRenderer());
+		this.currentStepTable.setTableHeader(null);
+		this.currentStepTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		this.currentStepTable.setRowHeight(50);
+
+		for (int i = 0; i < kTableColumnCount; i++)
+		{
+			this.currentStepTable.setValueAt(Integer.valueOf(i), 0, i);
+		}
+
 		// MAIN PANE - SEQUENCER VIEW
 		
 		JPanel	sequencerPanel = new JPanel();
 		sequencerPanel.setLayout(new BoxLayout(sequencerPanel, BoxLayout.Y_AXIS));
 		getContentPane().add(sequencerPanel, BorderLayout.CENTER);
-
-		// TODO active step view
 
 		// sequencer view
 
@@ -2094,6 +2135,10 @@ System.err.println ("using JavaMIDI for MIDI");
 			// new step
 			case 0:
 			{
+				this.runnableSetStep.setStep(stepNumber);
+
+				SwingUtilities.invokeLater(this.runnableSetStep);
+				
 				if (this.currentOption.valid && this.currentOption.tie)
 				{
 					this.tiedOption.copyFrom(this.currentOption);
@@ -2257,6 +2302,9 @@ System.err.println ("using JavaMIDI for MIDI");
 	private Option
 	currentOption = new Option();
 
+	private JTable
+	currentStepTable = null;
+	
 	private File
 	file = null;
 	
@@ -2323,12 +2371,12 @@ System.err.println ("using JavaMIDI for MIDI");
 	private JSlider
 	ratchetSlider = null;
 
+	private RunnableSetStepTask
+	runnableSetStep = new RunnableSetStepTask();
+
 	private Sequence
 	sequence;
 
-	private JLabel
-	statusLabel = null;
-	
 	private JTable
 	table = null;
 	
@@ -2357,6 +2405,33 @@ System.err.println ("using JavaMIDI for MIDI");
 	// PRIVATE DATA
 
 	// INNER CLASSES
+
+	class RunnableSetStepTask
+	implements Runnable
+	{
+		// RUNNABLE INTERFACE
+		
+		public void
+		run ()
+		{
+			System.err.println("RunnableSetStepTask.run() setting step: " + this.stepNumber);
+
+			SequencerWindow.this.currentStepTable.setColumnSelectionInterval(this.stepNumber, this.stepNumber);
+		}
+
+		// PUBLIC METHODS
+
+		public void
+		setStep(int inStepNumber)
+		{
+			this.stepNumber = inStepNumber;
+		}
+
+		// PRIVATE DATA
+
+		private int
+		stepNumber;
+	}
 
 	class SequencerTimerTask
 	extends TimerTask
