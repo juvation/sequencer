@@ -747,7 +747,7 @@ public class SequencerWindow
 		lowerToolBar.add(keyLabel);
 		
 		List<String>	keyList = new ArrayList<String>();
-		keyList.add("Chrono");
+		keyList.add("Chromatic");
 		keyList.add("C major");
 		keyList.add("C# major");
 		keyList.add("D major");
@@ -759,7 +759,7 @@ public class SequencerWindow
 		keyList.add("Ab major");
 		keyList.add("A major");
 		keyList.add("Bb major");
-		keyList.add("A major");
+		keyList.add("B major");
 
 		JComboBox	keyPopup = new JComboBox (keyList.toArray());
 		keyPopup.setActionCommand ("KEY_POPUP");
