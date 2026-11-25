@@ -31,7 +31,9 @@ public class OptionCellRenderer
 	OptionCellRenderer()
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setOpaque(false);
+
+		// must set this for the background to show up DUH
+		setOpaque(true);
 
 		// have to set bounds to get horiz alignment to work
 		Rectangle	bounds = getBounds();

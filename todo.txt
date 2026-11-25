@@ -10,6 +10,8 @@ sequencer mutes
 split bottom UI bar into two
 midi sync
 all notes off isn't good enough (only sometimes, LFS)
+recording notes from keyboard
+separate sync input
 
 TODO
 --

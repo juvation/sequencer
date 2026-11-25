@@ -515,7 +515,7 @@ public class SequencerWindow
 		probabilityPanel.add(this.probabilitySlider);
 		
 		JLabel	probabilityLabel = new JLabel("P%");
-		probabilityLabel.setLabelfor (this.probabilitySlider);
+		probabilityLabel.setLabelFor (this.probabilitySlider);
 		probabilityPanel.add(probabilityLabel);
 
 		// mute probability panel
@@ -533,7 +533,7 @@ public class SequencerWindow
 		mutePanel.add(this.muteSlider);
 
 		JLabel	muteLowerLabel = new JLabel("Mute P%");
-		muteLowerLabel.setLabelfor (this.muteSlider);
+		muteLowerLabel.setLabelFor(this.muteSlider);
 		mutePanel.add(muteLowerLabel);
 
 		// tie probability panel
@@ -551,7 +551,7 @@ public class SequencerWindow
 		tiePanel.add(this.tieSlider);
 		
 		JLabel	tieLabel = new JLabel("Tie P%");
-		tieLabel.setLabelfor (this.tieSlider);
+		tieLabel.setLabelFor (this.tieSlider);
 		tiePanel.add(tieLabel);
 
 		// ratchet probability panel
@@ -569,7 +569,7 @@ public class SequencerWindow
 		ratchetPanel.add(this.ratchetSlider);
 		
 		JLabel	ratchetLowerLabel = new JLabel("Rat P%");
-		ratchetLowerLabel.setLabelfor (this.ratchetSlider);
+		ratchetLowerLabel.setLabelFor (this.ratchetSlider);
 		ratchetPanel.add(ratchetLowerLabel);
 
 		// LOWER
@@ -615,7 +615,7 @@ public class SequencerWindow
 		velocityLowerPanel.add(this.velocityLowerSlider);
 		
 		JLabel	velocityLowerLabel = new JLabel("Velocity");
-		velocityLowerLabel.setLabelfor (this.velocityLowerSlider);
+		velocityLowerLabel.setLabelFor (this.velocityLowerSlider);
 		velocityLowerPanel.add(velocityLowerLabel);
 
 		// gate time lower panel
@@ -633,7 +633,7 @@ public class SequencerWindow
 		gateTimeLowerPanel.add(this.gateTimeLowerSlider);
 		
 		JLabel	gateTimeLowerLabel = new JLabel("Gate");
-		gateTimeLowerLabel.setLabelfor (this.gateTimeLowerSlider);
+		gateTimeLowerLabel.setLabelFor (this.gateTimeLowerSlider);
 		gateTimeLowerPanel.add(gateTimeLowerLabel);
 
 		// UPPER
@@ -679,7 +679,7 @@ public class SequencerWindow
 		velocityUpperPanel.add(this.velocityUpperSlider);
 		
 		JLabel	velocityUpperLabel = new JLabel("Velocity");
-		velocityUpperLabel.setLabelfor (this.velocityUpperSlider);
+		velocityUpperLabel.setLabelFor (this.velocityUpperSlider);
 		velocityUpperPanel.add(velocityUpperLabel);
 
 		// gate time upper panel
@@ -697,7 +697,7 @@ public class SequencerWindow
 		gateTimeUpperPanel.add(this.gateTimeUpperSlider);
 		
 		JLabel	gateTimeUpperLabel = new JLabel("Gate");
-		gateTimeUpperLabel.setLabelfor (this.gateTimeUpperSlider);
+		gateTimeUpperLabel.setLabelFor (this.gateTimeUpperSlider);
 		gateTimeUpperPanel.add(gateTimeUpperLabel);
 
 		// TOOLBAR
@@ -738,8 +738,8 @@ public class SequencerWindow
 
 		// fix to key
 		
-		JLabel	keyLabel = new Jlabel("Key:");
-		lowerToolBar.add (keyLabel);
+		JLabel	keyLabel = new JLabel("Key:");
+		lowerToolBar.add(keyLabel);
 		
 		List<String>	keyList = new ArrayList<String>();
 		keyList.add("Chrono");
@@ -763,19 +763,26 @@ public class SequencerWindow
 		
 		loadMidiChannelPreference();
 
+		// vary
+
+		JButton	varyButton = new JButton("Vary...");
+		varyButton.setActionCommand("VARY");
+		varyButton.addActionListener(this);
+		lowerToolBar.add(varyButton);
+		
 		// open/save
 
-		JButton	openButton = new JButton("Open Sequence...");
+		JButton	openButton = new JButton("Open...");
 		openButton.setActionCommand("OPEN");
 		openButton.addActionListener(this);
 		lowerToolBar.add(openButton);
 		
-		JButton	saveButton = new JButton("Save Sequence");
+		JButton	saveButton = new JButton("Save");
 		saveButton.setActionCommand("SAVE");
 		saveButton.addActionListener(this);
 		lowerToolBar.add(saveButton);
 		
-		JButton	saveAsButton = new JButton("Save Sequence as...");
+		JButton	saveAsButton = new JButton("Save As...");
 		saveAsButton.setActionCommand("SAVE_AS");
 		saveAsButton.addActionListener(this);
 		lowerToolBar.add(saveAsButton);
@@ -1155,6 +1162,12 @@ public class SequencerWindow
 			{
 				SequencerWindow.showErrorDialog("Error", "Please select an option location to swap paste.");
 			}
+		}
+		else if (actionCommand.equalsIgnoreCase("VARY"))
+		{
+			VaryWindow	varyWindow = new VaryWindow();
+			varyWindow.setLocationRelativeTo(null);
+			varyWindow.setVisible(true);
 		}
 		else
 		{
@@ -1965,7 +1978,7 @@ public class SequencerWindow
 		// MIDI INPUT DEVICE
 		
 		{
-			JLabel	label = new Jlabel("Input:");
+			JLabel	label = new JLabel("Input:");
 			panel.add(label);
 	
 			// build the name array for the input device popup
@@ -2012,7 +2025,7 @@ public class SequencerWindow
 		
 		// MIDI OUTPUT DEVICE
 		{
-			JLabel	label = new Jlabel("Output:");
+			JLabel	label = new JLabel("Output:");
 			panel.add (label);
 			
 			// build the name array for the output device popup

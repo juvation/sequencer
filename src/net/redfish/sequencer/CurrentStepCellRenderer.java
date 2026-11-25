@@ -34,8 +34,8 @@ public class CurrentStepCellRenderer
 		// for centring the label
 		setLayout(new GridBagLayout());
 
-		// no idea what this does
-		setOpaque(false);
+		// must set this for the background to show up DUH
+		setOpaque(true);
 
 		Font	largeFont = new Font("Sans Serif", Font.BOLD, 18);
 
