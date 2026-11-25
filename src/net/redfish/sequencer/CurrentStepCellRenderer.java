@@ -66,9 +66,6 @@ public class CurrentStepCellRenderer
 			{
 				setBorder(this.border);
 
-				// System.err.println("selected: setting foreground to " + inTable.getSelectionForeground());
-				// System.err.println("selected: setting background to " + inTable.getSelectionBackground());
-
 				setForeground(inTable.getSelectionForeground());
 				setBackground(inTable.getSelectionBackground());
 
@@ -77,9 +74,6 @@ public class CurrentStepCellRenderer
 			else
 			{
 				setBorder(null);
-
-				// System.err.println("not selected: setting foreground to " + inTable.getForeground());
-				// System.err.println("not selected: setting background to " + inTable.getBackground());
 
 				setForeground(inTable.getForeground());
 				setBackground(inTable.getBackground());

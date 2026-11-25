@@ -431,7 +431,7 @@ public class SequencerWindow
 
 		// sequencer view
 
-		this.table = new JTable(kTableRowCount, kTableColumnCount)
+		this.sequenceTable = new JTable(kTableRowCount, kTableColumnCount)
 		{
 			public Dimension
 			getPreferredScrollableViewportSize()
@@ -446,18 +446,22 @@ public class SequencerWindow
 			}
 		};
 		
-		this.table.addMouseListener(this);
-		this.table.setCellSelectionEnabled(true);
-		this.table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		this.table.setDefaultEditor(Object.class, null);
-		this.table.setDefaultRenderer(Object.class, new OptionCellRenderer());
-		this.table.setTableHeader(null);
-		this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		this.sequenceTable.addMouseListener(this);
+		this.sequenceTable.setCellSelectionEnabled(true);
+		this.sequenceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		this.sequenceTable.setForeground(Color.BLACK);
+		this.sequenceTable.setBackground(Color.WHITE);
+		this.sequenceTable.setSelectionForeground(Color.BLACK);
+		this.sequenceTable.setSelectionBackground(Color.GREEN);
+		this.sequenceTable.setDefaultEditor(Object.class, null);
+		this.sequenceTable.setDefaultRenderer(Object.class, new OptionCellRenderer());
+		this.sequenceTable.setTableHeader(null);
+		this.sequenceTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-		ListSelectionModel	selectionModel = this.table.getSelectionModel();
+		ListSelectionModel	selectionModel = this.sequenceTable.getSelectionModel();
 		selectionModel.addListSelectionListener(this);
 		
-		selectionModel = this.table.getColumnModel().getSelectionModel();
+		selectionModel = this.sequenceTable.getColumnModel().getSelectionModel();
 		selectionModel.addListSelectionListener(this);
 		
 		// add copy/paste actions
@@ -467,13 +471,13 @@ public class SequencerWindow
 			(KeyEvent.VK_C, toolkit.getMenuShortcutKeyMask(), false);
 		KeyStroke pasteKey = KeyStroke.getKeyStroke
 			(KeyEvent.VK_V, toolkit.getMenuShortcutKeyMask(), false);
-		this.table.registerKeyboardAction
+		this.sequenceTable.registerKeyboardAction
 			(this, "COPY", copyKey, JComponent.WHEN_FOCUSED);
-		this.table.registerKeyboardAction
+		this.sequenceTable.registerKeyboardAction
 			(this, "PASTE", pasteKey, JComponent.WHEN_FOCUSED);
 
 		// add a scroller around the sequencer panel
-		JScrollPane	scrollPane = new JScrollPane(this.table);
+		JScrollPane	scrollPane = new JScrollPane(this.sequenceTable);
 		sequencerPanel.add(scrollPane);
 
 		// set the cell contents
@@ -486,7 +490,7 @@ public class SequencerWindow
 			{
 				Option	option = step.getOption(optionNumber);
 
-				this.table.setValueAt(option, optionNumber, stepNumber);
+				this.sequenceTable.setValueAt(option, optionNumber, stepNumber);
 			}
 		}
 		
@@ -806,8 +810,8 @@ public class SequencerWindow
 		
 		pack();
 
-		this.table.setRowSelectionInterval(0, 0);
-		this.table.setColumnSelectionInterval(0, 0);
+		this.sequenceTable.setRowSelectionInterval(0, 0);
+		this.sequenceTable.setColumnSelectionInterval(0, 0);
 
 		this.currentStepTable.setRowSelectionInterval(0, 0);
 		this.currentStepTable.setColumnSelectionInterval(0, 0);
@@ -923,8 +927,8 @@ public class SequencerWindow
 
 		if (actionCommand.equalsIgnoreCase("COPY"))
 		{
-			int stepNumber = this.table.getSelectedColumn();
-			int optionNumber = this.table.getSelectedRow();
+			int stepNumber = this.sequenceTable.getSelectedColumn();
+			int optionNumber = this.sequenceTable.getSelectedRow();
 
 			if (stepNumber >= 0 && optionNumber >= 0)
 			{
@@ -1121,8 +1125,8 @@ public class SequencerWindow
 		{
 			// this is a nondestructive paste which swaps the selection & paste buffer
 			
-			int stepNumber = this.table.getSelectedColumn();
-			int optionNumber = this.table.getSelectedRow();
+			int stepNumber = this.sequenceTable.getSelectedColumn();
+			int optionNumber = this.sequenceTable.getSelectedRow();
 
 			if (stepNumber >= 0 || optionNumber >= 0)
 			{
@@ -1184,8 +1188,8 @@ public class SequencerWindow
 
 		if (source instanceof JSlider)
 		{
-			int	stepNumber = this.table.getSelectedColumn();
-			int	optionNumber = this.table.getSelectedRow();
+			int	stepNumber = this.sequenceTable.getSelectedColumn();
+			int	optionNumber = this.sequenceTable.getSelectedRow();
 			
 			if (stepNumber >= 0 && optionNumber >= 0)
 			{
@@ -1250,8 +1254,8 @@ public class SequencerWindow
 			return;
 		}
 
-		int	stepNumber = this.table.getSelectedColumn();
-		int	optionNumber = this.table.getSelectedRow();
+		int	stepNumber = this.sequenceTable.getSelectedColumn();
+		int	optionNumber = this.sequenceTable.getSelectedRow();
 		
 		if (stepNumber >= 0 && optionNumber >= 0)
 		{
@@ -1428,8 +1432,8 @@ public class SequencerWindow
 		{
 			System.err.println("midi note on: " + inNote);
 	
-			int	stepNumber = this.table.getSelectedColumn();
-			int	optionNumber = this.table.getSelectedRow();
+			int	stepNumber = this.sequenceTable.getSelectedColumn();
+			int	optionNumber = this.sequenceTable.getSelectedRow();
 	
 			if (stepNumber >= 0 || optionNumber >= 0)
 			{
@@ -1444,7 +1448,7 @@ public class SequencerWindow
 				{
 					int	newStep = (stepNumber + 1) % 16;
 	
-					this.table.setColumnSelectionInterval(newStep, newStep);
+					this.sequenceTable.setColumnSelectionInterval(newStep, newStep);
 				}
 			}
 		}
@@ -1513,7 +1517,7 @@ public class SequencerWindow
 	public Option
 	getSelectedOption()
 	{
-		return getOption(this.table.getSelectedColumn(), this.table.getSelectedRow());
+		return getOption(this.sequenceTable.getSelectedColumn(), this.sequenceTable.getSelectedRow());
 	}
 
 	public void
@@ -1613,13 +1617,13 @@ public class SequencerWindow
 	public void
 	setOption(Option inOption)
 	{
-		int	stepNumber = this.table.getSelectedColumn();
-		int	optionNumber = this.table.getSelectedRow();
+		int	stepNumber = this.sequenceTable.getSelectedColumn();
+		int	optionNumber = this.sequenceTable.getSelectedRow();
 
 		if (stepNumber >= 0 || optionNumber >= 0)
 		{
 			this.sequence.setOption(stepNumber, optionNumber, inOption);
-			this.table.setValueAt(inOption, optionNumber, stepNumber);
+			this.sequenceTable.setValueAt(inOption, optionNumber, stepNumber);
 
 			if (this.changesModifySequence)
 			{
@@ -1638,7 +1642,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.gateTimeLower = Math.min(option.gateTimeUpper, this.gateTimeLowerSlider.getValue());
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1652,7 +1656,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.gateTimeUpper = Math.max(option.gateTimeLower, this.gateTimeUpperSlider.getValue());
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1667,7 +1671,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.noteLower = Math.min(option.noteUpper, inValue);
 	
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1682,7 +1686,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.noteUpper = Math.max(option.noteLower, inValue);
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1696,7 +1700,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.muteProbability = this.muteSlider.getValue();
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1710,7 +1714,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.probability = this.probabilitySlider.getValue();
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1724,7 +1728,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.ratchetProbability = this.ratchetSlider.getValue();
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1738,7 +1742,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.tieProbability = this.tieSlider.getValue();
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1752,7 +1756,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.velocityLower = Math.min(option.velocityUpper, this.velocityLowerSlider.getValue());
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1766,7 +1770,7 @@ public class SequencerWindow
 		Option	option = getOption(inStepNumber, inOptionNumber);
 		option.velocityUpper = Math.max(option.velocityLower, this.velocityUpperSlider.getValue());
 
-		this.table.setValueAt(option, inOptionNumber, inStepNumber);
+		this.sequenceTable.setValueAt(option, inOptionNumber, inStepNumber);
 
 		if (this.changesModifySequence)
 		{
@@ -1943,8 +1947,8 @@ public class SequencerWindow
 			
 			this.file = file;
 			setSequenceModified(false, true);
-			this.table.revalidate();
-			this.table.repaint();
+			this.sequenceTable.revalidate();
+			this.sequenceTable.repaint();
 
 			setTitle("AssQuencer - " + this.file.getName());
 		}
@@ -2290,21 +2294,21 @@ System.err.println ("using JavaMIDI for MIDI");
 	private void
 	packColumns(int inMargin)
 	{
-		TableModel	model = this.table.getModel();
-		DefaultTableColumnModel	columnModel = (DefaultTableColumnModel) table.getColumnModel();
+		TableModel	model = this.sequenceTable.getModel();
+		DefaultTableColumnModel	columnModel = (DefaultTableColumnModel) this.sequenceTable.getColumnModel();
 			
-		for (int col = 0; col < this.table.getColumnCount(); col++)
+		for (int col = 0; col < this.sequenceTable.getColumnCount(); col++)
 		{
 			TableColumn	column = columnModel.getColumn(col);
 			
 			int	width = 0;
 
 			// determine widest row in column
-			for (int row = 0; row < this.table.getRowCount(); row++)
+			for (int row = 0; row < this.sequenceTable.getRowCount(); row++)
 			{
-				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
+				TableCellRenderer	renderer = this.sequenceTable.getCellRenderer(row, col);
 				Component	component = renderer.getTableCellRendererComponent
-					(this.table, this.table.getValueAt(row, col), false, false, row, col);
+					(this.sequenceTable, this.sequenceTable.getValueAt(row, col), false, false, row, col);
 				
 				width = Math.max(width, component.getPreferredSize().width);
 			}
@@ -2319,21 +2323,21 @@ System.err.println ("using JavaMIDI for MIDI");
 	private void
 	packRows(int inMargin)
 	{
-		for (int row = 0; row < this.table.getRowCount(); row++)
+		for (int row = 0; row < this.sequenceTable.getRowCount(); row++)
 		{
-			int	height = this.table.getRowHeight();
+			int	height = this.sequenceTable.getRowHeight();
 			
 			// determine highest cell in row
-			for (int col = 0; col < this.table.getColumnCount(); col++)
+			for (int col = 0; col < this.sequenceTable.getColumnCount(); col++)
 			{
-				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
-				Component	component = this.table.prepareRenderer(renderer, row, col);
+				TableCellRenderer	renderer = this.sequenceTable.getCellRenderer(row, col);
+				Component	component = this.sequenceTable.prepareRenderer(renderer, row, col);
 				int	componentHeight = component.getPreferredSize().height +(2 * inMargin);
 				
 				height = Math.max(height, componentHeight);
 			}
 			
-			this.table.setRowHeight(height);
+			this.sequenceTable.setRowHeight(height);
 		}
 	}
 	
@@ -2682,7 +2686,7 @@ System.err.println ("using JavaMIDI for MIDI");
 	sequence;
 
 	private JTable
-	table = null;
+	sequenceTable = null;
 	
 	// a member so we don't allocate during the timer tick
 	private Option
@@ -2720,8 +2724,8 @@ System.err.println ("using JavaMIDI for MIDI");
 		{
 			System.err.println("RunnableSelectOptionTask.run() setting step: " + this.stepNumber + " option: " + this.optionNumber);
 
-			SequencerWindow.this.table.setColumnSelectionInterval(this.stepNumber, this.stepNumber);
-			SequencerWindow.this.table.setRowSelectionInterval(this.optionNumber, this.optionNumber);
+			SequencerWindow.this.sequenceTable.setColumnSelectionInterval(this.stepNumber, this.stepNumber);
+			SequencerWindow.this.sequenceTable.setRowSelectionInterval(this.optionNumber, this.optionNumber);
 		}
 
 		// PUBLIC METHODS

@@ -102,7 +102,7 @@ public class OptionCellRenderer
 	getTableCellRendererComponent(JTable inTable, Object inValue,
 		boolean inIsSelected, boolean inHasFocus, int inRow, int inColumn)
 	{
-		Option	option =(Option) inValue;
+		Option	option = (Option) inValue;
 
 		try
 		{
@@ -113,13 +113,17 @@ public class OptionCellRenderer
 			{
 				setBorder(this.border);
 
-				setBackground(Color.GREEN);
+				setForeground(inTable.getSelectionForeground());
+				setBackground(inTable.getSelectionBackground());
+
+				// System.err.println("selected: background is now " + getBackground());
 			}
 			else
 			{
 				setBorder(null);
 
-				setBackground(Color.WHITE);
+				setForeground(inTable.getForeground());
+				setBackground(inTable.getBackground());
 			}
 
 			this.probabilityLabel.setText
