@@ -343,6 +343,13 @@ public class SequencerWindow
 	{
 		this.sequence = new Sequence(16, 2);
 
+		// initialise the keymap
+		// TODO save this to the sequence?
+		for (int i = 0; i < 128; i++)
+		{
+			this.keyMap[i] = i;
+		}
+
 		// INITIALISE MIDI
 
 		openMidi();
@@ -928,12 +935,6 @@ public class SequencerWindow
 				{
 					this.keyMap[i] = KeyMapper.getInstance().mapNoteToKey(i, keyIndex);
 				}
-			}
-
-			// now dump the first octave to check
-			for (int i = 0; i < 12; i++)
-			{
-				System.err.println(getNoteString(this.keyMap[i]));
 			}
 		}
 		else if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
@@ -2224,6 +2225,9 @@ System.err.println ("using JavaMIDI for MIDI");
 				{
 					this.currentOption.copyFrom(selectedOption);
 					this.currentOption.valid = true;
+
+					// map the note to our scale
+					this.currentOption.note = this.keyMap[this.currentOption.note];
 
 					// don't select the option here
 					// as it would confuse the user who is trying to edit the sequence, etc
