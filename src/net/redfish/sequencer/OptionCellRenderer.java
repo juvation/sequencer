@@ -108,10 +108,14 @@ public class OptionCellRenderer
 			if (inIsSelected)
 			{
 				setBorder(this.border);
+
+				setBackground(Color.GREEN);
 			}
 			else
 			{
 				setBorder(null);
+
+				setBackground(Color.WHITE);
 			}
 
 			this.probabilityLabel.setText
@@ -142,36 +146,7 @@ public class OptionCellRenderer
 		
 		return this;
 	}
-	
-	public void
-	setValue(Object inValue)
-	{
-	}
-	
-	// The following methods override the defaults for performance reasons
 
-	/*
-	protected void
-	firePropertyChange(String inPropertyName, Object inOldValue, Object inNewValue)
-	{
-	}
-	
-	public void
-	firePropertyChange(String inPropertyName, boolean inOldValue, boolean inNewValue)
-	{
-	}
-	
-	public void
-	revalidate()
-	{
-	}
-	
-	public void
-	validate()
-	{
-	}
-	*/
-	
 	// PRIVATE DATA
 	
 	private Border

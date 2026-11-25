@@ -726,6 +726,35 @@ public class SequencerWindow
 		stopButton.addActionListener(this);
 		lowerToolBar.add(stopButton);
 
+		// fix to key
+		
+		JLabel	keyLabel = new JLabel ("Key:");
+		lowerToolBar.add (keyLabel);
+		
+		List<String>	keyList = new ArrayList<String>();
+		keyList.add("Chrono");
+		keyList.add("C major");
+		keyList.add("C# major");
+		keyList.add("D major");
+		keyList.add("Eb major");
+		keyList.add("E major");
+		keyList.add("F major");
+		keyList.add("F# major");
+		keyList.add("G major");
+		keyList.add("Ab major");
+		keyList.add("A major");
+		keyList.add("Bb major");
+		keyList.add("A major");
+
+		JComboBox	keyPopup = new JComboBox (keyList.toArray());
+		keyPopup.setActionCommand ("KEY_POPUP");
+		keyPopup.addActionListener (this);
+		lowerToolBar.add (keyPopup);
+		
+		loadMidiChannelPreference();
+
+		// open/save
+
 		JButton	openButton = new JButton("Open Sequence...");
 		openButton.setActionCommand("OPEN");
 		openButton.addActionListener(this);
@@ -741,6 +770,8 @@ public class SequencerWindow
 		saveAsButton.addActionListener(this);
 		lowerToolBar.add(saveAsButton);
 		
+		// copy/paste/swap
+
 		JButton	copyButton = new JButton("Copy Option");
 		copyButton.setActionCommand("COPY");
 		copyButton.addActionListener(this);
@@ -760,6 +791,9 @@ public class SequencerWindow
 
 		this.table.setRowSelectionInterval(0, 0);
 		this.table.setColumnSelectionInterval(0, 0);
+
+		this.currentStepTable.setRowSelectionInterval(0, 0);
+		this.currentStepTable.setColumnSelectionInterval(0, 0);
 
 		// any changes after this change the sequence
 		this.changesModifySequence = true;
@@ -869,6 +903,39 @@ public class SequencerWindow
 				SequencerWindow.showErrorDialog("Error", "Please select an option to copy.");
 			}
 		}
+		else if (actionCommand.equalsIgnoreCase("KEY_POPUP"))
+		{
+			JComboBox	keyPopup = (JComboBox) inEvent.getSource();
+			int				keyIndex = keyPopup.getSelectedIndex();
+			
+			System.err.println("selected key " + keyIndex);
+
+			if (keyIndex == 0)
+			{
+				// chrono, done differently
+				for (int i = 0; i < 128; i++)
+				{
+					this.keyMap[i] = i;
+				}
+			}
+			else
+			{
+				// for us, zero = chrono, but for the mapper, zero = C
+				keyIndex--;
+
+				// generate our key map
+				for (int i = 0; i < 12; i++)
+				{
+					this.keyMap[i] = KeyMapper.getInstance().mapNoteToKey(i, keyIndex);
+				}
+			}
+
+			// now dump the first octave to check
+			for (int i = 0; i < 12; i++)
+			{
+				System.err.println(getNoteString(this.keyMap[i]));
+			}
+		}
 		else if (actionCommand.equalsIgnoreCase("KEYBOARD_CLOSE_ACTION"))
 		{
 			setVisible(false);
@@ -881,7 +948,6 @@ public class SequencerWindow
 		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
 		{
 			sendMidiAllNotesOff();
-			
 			saveMidiChannelPreference();
 		}
 		else if (actionCommand.equals ("MIDI_INPUT_DEVICE_POPUP"))
@@ -2138,9 +2204,9 @@ System.err.println ("using JavaMIDI for MIDI");
 			// new step
 			case 0:
 			{
-				this.runnableSetStep.setStep(stepNumber);
+				this.runnableSelectStepTask.setStep(stepNumber);
 
-				SwingUtilities.invokeLater(this.runnableSetStep);
+				SwingUtilities.invokeLater(this.runnableSelectStepTask);
 				
 				if (this.currentOption.valid && this.currentOption.tie)
 				{
@@ -2158,6 +2224,9 @@ System.err.println ("using JavaMIDI for MIDI");
 				{
 					this.currentOption.copyFrom(selectedOption);
 					this.currentOption.valid = true;
+
+					// don't select the option here
+					// as it would confuse the user who is trying to edit the sequence, etc
 				}
 				else
 				{
@@ -2326,6 +2395,9 @@ System.err.println ("using JavaMIDI for MIDI");
 	private KeyboardView
 	keyboardUpperView = null;
 
+	private int[]
+	keyMap = new int[128];
+
 	private int
 	midiChannel0 = 0;
 	
@@ -2374,8 +2446,11 @@ System.err.println ("using JavaMIDI for MIDI");
 	private JSlider
 	ratchetSlider = null;
 
-	private RunnableSetStepTask
-	runnableSetStep = new RunnableSetStepTask();
+	private RunnableSelectOptionTask
+	runnableSelectOptionTask = new RunnableSelectOptionTask();
+
+	private RunnableSelectStepTask
+	runnableSelectStepTask = new RunnableSelectStepTask();
 
 	private Sequence
 	sequence;
@@ -2409,7 +2484,7 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	// INNER CLASSES
 
-	class RunnableSetStepTask
+	class RunnableSelectOptionTask
 	implements Runnable
 	{
 		// RUNNABLE INTERFACE
@@ -2417,9 +2492,48 @@ System.err.println ("using JavaMIDI for MIDI");
 		public void
 		run ()
 		{
-			System.err.println("RunnableSetStepTask.run() setting step: " + this.stepNumber);
+			System.err.println("RunnableSelectOptionTask.run() setting step: " + this.stepNumber + " option: " + this.optionNumber);
+
+			SequencerWindow.this.table.setColumnSelectionInterval(this.stepNumber, this.stepNumber);
+			SequencerWindow.this.table.setRowSelectionInterval(this.optionNumber, this.optionNumber);
+		}
+
+		// PUBLIC METHODS
+
+		public void
+		setOption(int inOptionNumber)
+		{
+			this.optionNumber = inOptionNumber;
+		}
+
+		public void
+		setStep(int inStepNumber)
+		{
+			this.stepNumber = inStepNumber;
+		}
+
+		// PRIVATE DATA
+
+		private int
+		optionNumber;
+
+		private int
+		stepNumber;
+
+	}
+
+	class RunnableSelectStepTask
+	implements Runnable
+	{
+		// RUNNABLE INTERFACE
+		
+		public void
+		run ()
+		{
+			System.err.println("RunnableSelectStepTask.run() setting step: " + this.stepNumber);
 
 			SequencerWindow.this.currentStepTable.setColumnSelectionInterval(this.stepNumber, this.stepNumber);
+			SequencerWindow.this.currentStepTable.setRowSelectionInterval(0, 0);
 		}
 
 		// PUBLIC METHODS
@@ -2445,6 +2559,6 @@ System.err.println ("using JavaMIDI for MIDI");
 			SequencerWindow.this.timerTick();
 		}
 	}
-
+    
 }
 

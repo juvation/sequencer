@@ -23,7 +23,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.SwingConstants;
 
 public class CurrentStepCellRenderer
-	extends JComponent
+	extends JLabel
 	implements TableCellRenderer
 {
 	public
@@ -54,27 +54,30 @@ public class CurrentStepCellRenderer
 	getTableCellRendererComponent(JTable inTable, Object inValue,
 		boolean inIsSelected, boolean inHasFocus, int inRow, int inColumn)
 	{
-		System.err.println("getTableCellRendererComponent() for column " + inColumn);
+		System.err.println("getTableCellRendererComponent() for column " + inColumn + " selected? " + inIsSelected);
 
 		Integer	step = (Integer) inValue;
 
 		try
 		{
-			// maybe we don't have borders in the current step indicator
-			// setBorder(this.border);
-
-			// THIS NEVER WORKS
+			// setting the colours NEVER works
 
 			if (inIsSelected)
 			{
+				setBorder(this.border);
+
 				System.err.println("selected: setting foreground to " + inTable.getSelectionForeground());
 				System.err.println("selected: setting background to " + inTable.getSelectionBackground());
 
 				setForeground(inTable.getSelectionForeground());
 				setBackground(inTable.getSelectionBackground());
+
+				System.err.println("selected: background is now " + getBackground());
 			}
 			else
 			{
+				setBorder(null);
+
 				System.err.println("not selected: setting foreground to " + inTable.getForeground());
 				System.err.println("not selected: setting background to " + inTable.getBackground());
 
@@ -91,12 +94,7 @@ public class CurrentStepCellRenderer
 		
 		return this;
 	}
-	
-	public void
-	setValue(Object inValue)
-	{
-	}
-	
+
 	// PRIVATE DATA
 	
 	private Border
