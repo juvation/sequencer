@@ -106,8 +106,7 @@ public class OptionCellRenderer
 
 		try
 		{
-// System.err.println("cell row=" + inRow + " col=" + inColumn);
-// System.err.println("selected=" + inIsSelected + " hasfocus=" + inHasFocus);
+			// setting the colours still doesn't work even with opaque set to true
 
 			if (inIsSelected)
 			{

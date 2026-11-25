@@ -60,7 +60,7 @@ public class CurrentStepCellRenderer
 
 		try
 		{
-			// setting the colours NEVER works
+			// setting the colours now works because we set opaque to true
 
 			if (inIsSelected)
 			{

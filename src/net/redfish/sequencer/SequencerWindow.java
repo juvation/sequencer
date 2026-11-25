@@ -406,8 +406,8 @@ public class SequencerWindow
 
 		getContentPane().add(this.currentStepTable, BorderLayout.NORTH);
 
-		this.currentStepTable.setColumnSelectionAllowed(true);
-		this.currentStepTable.setRowSelectionAllowed(false);
+		this.currentStepTable.setCellSelectionEnabled(true);
+		this.currentStepTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		this.currentStepTable.setForeground(Color.BLACK);
 		this.currentStepTable.setBackground(Color.WHITE);
 		this.currentStepTable.setSelectionForeground(Color.BLACK);
@@ -467,6 +467,7 @@ public class SequencerWindow
 		// add copy/paste actions
 
 		Toolkit	toolkit = Toolkit.getDefaultToolkit();
+
 		KeyStroke copyKey = KeyStroke.getKeyStroke
 			(KeyEvent.VK_C, toolkit.getMenuShortcutKeyMask(), false);
 		KeyStroke pasteKey = KeyStroke.getKeyStroke
