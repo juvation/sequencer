@@ -1,5 +1,8 @@
 // KeyMapper.java
 
+// I wish I could come up with a better way to do this
+// but even the AI gets it wrong, LOL
+
 // PACKAGE
 
 package net.redfish.sequencer;

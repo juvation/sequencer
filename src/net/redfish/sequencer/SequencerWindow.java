@@ -860,28 +860,45 @@ public class SequencerWindow
 
 		String	osName = System.getProperty("os.name");
 
-		KeyStroke keyStroke = null;
-		
+		KeyStroke	keyStroke = null;
+
 		if (osName.startsWith("Windows"))
 		{
 			keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F4, menuShortcutKey);
+
+			rootPane.registerKeyboardAction
+				(this, "KEYBOARD_CLOSE_ACTION", keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 		}
 		else
 		if (osName.startsWith("Mac"))
 		{
 			keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKey);
+
+			rootPane.registerKeyboardAction
+				(this, "KEYBOARD_CLOSE_ACTION", keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+			keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKey);
+
+			rootPane.registerKeyboardAction
+				(this, "OPEN", keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+			keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKey);
+
+			rootPane.registerKeyboardAction
+				(this, "SAVE", keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 		}
 		else
 		{
 			// no shortcuts for other OSes(yet)
 		}
 		
-		if (keyStroke != null)
-		{
-			rootPane.registerKeyboardAction(this, "KEYBOARD_CLOSE_ACTION",
-				keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-		}
+		// OS neutral keymapping
+
+		keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
 		
+		rootPane.registerKeyboardAction
+			(this, "KEYBOARD_START_STOP", keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+
 		return rootPane;
 	}
     
@@ -931,7 +948,7 @@ public class SequencerWindow
 				keyIndex--;
 
 				// generate our key map
-				for (int i = 0; i < 12; i++)
+				for (int i = 0; i < 128; i++)
 				{
 					this.keyMap[i] = KeyMapper.getInstance().mapNoteToKey(i, keyIndex);
 				}
@@ -944,6 +961,17 @@ public class SequencerWindow
 			if (! isVisible())
 			{
 				dispose();
+			}
+		}
+		else if (actionCommand.equalsIgnoreCase("KEYBOARD_START_STOP"))
+		{
+			if (this.isRunning)
+			{
+				stop();
+			}
+			else
+			{
+				start();
 			}
 		}
 		else if (actionCommand.equals ("MIDI_CHANNEL_POPUP"))
@@ -1701,6 +1729,12 @@ public class SequencerWindow
 
 			this.isRunning = false;
 
+			if (this.currentOption.valid)
+			{
+				sendMidiNoteOff(currentOption.note);
+				currentOption.valid = false;
+			}
+
 			System.err.println("timer ran for " + this.timerTickCount + " ticks");
 		}
 		else
@@ -2227,6 +2261,8 @@ System.err.println ("using JavaMIDI for MIDI");
 					this.currentOption.valid = true;
 
 					// map the note to our scale
+					System.err.println("mapped " + this.currentOption.note + " to " + this.keyMap[this.currentOption.note]);
+
 					this.currentOption.note = this.keyMap[this.currentOption.note];
 
 					// don't select the option here
@@ -2334,6 +2370,8 @@ System.err.println ("using JavaMIDI for MIDI");
 			if (subtick == this.currentOption.gateTime / 12)
 			{
 				sendMidiNoteOff(this.currentOption.note);
+
+				this.currentOption.valid = false;
 			}
 		}
 	

@@ -147,6 +147,8 @@ public class OptionCellRenderer
 		return this;
 	}
 
+	// remember to override setValue() here if subclassing DefaultTableCellRenderer
+
 	// PRIVATE DATA
 	
 	private Border
