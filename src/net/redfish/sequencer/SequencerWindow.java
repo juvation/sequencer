@@ -52,6 +52,7 @@ import javax.sound.midi.Transmitter;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -1207,6 +1208,12 @@ public class SequencerWindow
 				}
 			}
 		}
+		else if (source instanceof JCheckBox)
+		{
+			JCheckBox	checkBox = (JCheckBox) source;
+
+			this.isRecording = checkBox.isSelected();
+		}
 	}
 
 	// CLIPBOARD OWNER IMPLEMENTATION
@@ -1402,25 +1409,28 @@ public class SequencerWindow
 	public void
 	onMidiNoteOn(int inNote, int inVelocity)
 	{
-		System.err.println("midi note on: " + inNote);
-
-		int	stepNumber = this.table.getSelectedColumn();
-		int	optionNumber = this.table.getSelectedRow();
-
-		if (stepNumber >= 0 || optionNumber >= 0)
+		if (this.isRecording)
 		{
-			Option	option = getOption(stepNumber, optionNumber);
-
-			option.noteLower = inNote;
-			option.noteUpper = inNote;
-
-			setOption(option);
-
-			if (!this.isRunning)
+			System.err.println("midi note on: " + inNote);
+	
+			int	stepNumber = this.table.getSelectedColumn();
+			int	optionNumber = this.table.getSelectedRow();
+	
+			if (stepNumber >= 0 || optionNumber >= 0)
 			{
-				int	newStep = (stepNumber + 1) % 16;
-
-				this.table.setColumnSelectionInterval(newStep, newStep);
+				Option	option = getOption(stepNumber, optionNumber);
+	
+				option.noteLower = inNote;
+				option.noteUpper = inNote;
+	
+				setOption(option);
+	
+				if (!this.isRunning)
+				{
+					int	newStep = (stepNumber + 1) % 16;
+	
+					this.table.setColumnSelectionInterval(newStep, newStep);
+				}
 			}
 		}
 	}
@@ -1948,16 +1958,16 @@ public class SequencerWindow
 		// PANEL
 		
 		JPanel	panel = new JPanel();
-		panel.setLayout (new FlowLayout (FlowLayout.CENTER));
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		
 		// MIDI INPUT DEVICE
 		
 		{
 			JLabel	label = new JLabel ("Input:");
-			panel.add (label);
+			panel.add(label);
 	
 			// build the name array for the input device popup
-			String[]	inputDeviceNameArray = new String [this.midiInputDeviceList.size()];
+			String[]	inputDeviceNameArray = new String[this.midiInputDeviceList.size()];
 	
 			for(int i = 0; i < this.midiInputDeviceList.size(); i++)
 			{
@@ -1967,9 +1977,13 @@ public class SequencerWindow
 			
 			this.midiInputDevicePopup = new JComboBox (inputDeviceNameArray);
 			// this.midiInputDevicePopup.setPreferredSize (new Dimension (200, 30));
-			this.midiInputDevicePopup.setActionCommand ("MIDI_INPUT_DEVICE_POPUP");
-			this.midiInputDevicePopup.addActionListener (this);
-			panel.add (this.midiInputDevicePopup);
+			this.midiInputDevicePopup.setActionCommand("MIDI_INPUT_DEVICE_POPUP");
+			this.midiInputDevicePopup.addActionListener(this);
+			panel.add(this.midiInputDevicePopup);
+
+			JCheckBox	recordCheckBox = new JCheckBox("Record");
+			recordCheckBox.addChangeListener(this);
+			panel.add(recordCheckBox);
 		}
 		
 		// MIDI CLOCK DEVICE
@@ -1979,7 +1993,7 @@ public class SequencerWindow
 			panel.add (label);
 	
 			// build the name array for the input device popup
-			String[]	clockDeviceNameArray = new String [this.midiClockDeviceList.size()];
+			String[]	clockDeviceNameArray = new String[this.midiClockDeviceList.size()];
 	
 			for(int i = 0; i < this.midiClockDeviceList.size(); i++)
 			{
@@ -1987,11 +2001,11 @@ public class SequencerWindow
 				clockDeviceNameArray[i] = device.getDeviceInfo().getName();
 			}
 			
-			this.midiClockDevicePopup = new JComboBox (clockDeviceNameArray);
+			this.midiClockDevicePopup = new JComboBox(clockDeviceNameArray);
 			// this.midiInputDevicePopup.setPreferredSize (new Dimension (200, 30));
-			this.midiClockDevicePopup.setActionCommand ("MIDI_CLOCK_DEVICE_POPUP");
-			this.midiClockDevicePopup.addActionListener (this);
-			panel.add (this.midiClockDevicePopup);
+			this.midiClockDevicePopup.setActionCommand("MIDI_CLOCK_DEVICE_POPUP");
+			this.midiClockDevicePopup.addActionListener(this);
+			panel.add(this.midiClockDevicePopup);
 		}	
 		
 		// MIDI OUTPUT DEVICE
@@ -2000,7 +2014,7 @@ public class SequencerWindow
 			panel.add (label);
 			
 			// build the name array for the output device popup
-			String[]	outputDeviceNameArray = new String [this.midiOutputDeviceList.size()];
+			String[]	outputDeviceNameArray = new String[this.midiOutputDeviceList.size()];
 	
 			for(int i = 0; i < this.midiOutputDeviceList.size(); i++)
 			{
@@ -2008,10 +2022,10 @@ public class SequencerWindow
 				outputDeviceNameArray[i] = device.getDeviceInfo().getName();
 			}
 			
-			this.midiOutputDevicePopup = new JComboBox (outputDeviceNameArray);
+			this.midiOutputDevicePopup = new JComboBox(outputDeviceNameArray);
 			// this.midiOutputDevicePopup.setPreferredSize (new Dimension (200, 30));
-			this.midiOutputDevicePopup.setActionCommand ("MIDI_OUTPUT_DEVICE_POPUP");
-			this.midiOutputDevicePopup.addActionListener (this);
+			this.midiOutputDevicePopup.setActionCommand("MIDI_OUTPUT_DEVICE_POPUP");
+			this.midiOutputDevicePopup.addActionListener(this);
 			panel.add (this.midiOutputDevicePopup);
 		}
 		
@@ -2020,20 +2034,20 @@ public class SequencerWindow
 		// MIDI CHANNEL
 		
 		{
-			JLabel	label = new JLabel ("Channel:");
+			JLabel	label = new JLabel("Channel:");
 			panel.add (label);
 			
-			String[]	channelNames = new String [16];
+			String[]	channelNames = new String[16];
 			
 			for(int i = 0; i < 16; i++)
 			{
-				channelNames [i] = Integer.toString (i + 1);
+				channelNames [i] = Integer.toString(i + 1);
 			}
 	
-			this.midiChannelPopup = new JComboBox (channelNames);
-			this.midiChannelPopup.setActionCommand ("MIDI_CHANNEL_POPUP");
-			this.midiChannelPopup.addActionListener (this);
-			panel.add (this.midiChannelPopup);
+			this.midiChannelPopup = new JComboBox(channelNames);
+			this.midiChannelPopup.setActionCommand("MIDI_CHANNEL_POPUP");
+			this.midiChannelPopup.addActionListener(this);
+			panel.add(this.midiChannelPopup);
 			
 			loadMidiChannelPreference();
 		}
@@ -2570,6 +2584,9 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	private JSlider
 	gateTimeUpperSlider = null;
+
+	private boolean
+	isRecording = false;
 
 	private boolean
 	isRunning = false;
