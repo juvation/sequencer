@@ -47,7 +47,7 @@ public class MidiReceiver
 			ShortMessage	shortMessage = (ShortMessage) inMessage;
 			
 			// check the device and the channel match
-			if (this.device == this.midiHost.getMidiInputDevice ())
+			if (this.device == this.midiHost.getMidiClockDevice ())
 			{
 				// weirdness here
 				// ShortMessage only deals with channel messages
@@ -63,42 +63,39 @@ public class MidiReceiver
 				// system realtime messages
 				if (command == ShortMessage.TIMING_CLOCK)
 				{
-					this.midiHost.sendMidiClock();
+					this.midiHost.onMidiClock();
 				}
 				else if (command == ShortMessage.START)
 				{
-					this.midiHost.sendMidiStart();
+					this.midiHost.onMidiStart();
 				}
 				else if (command == ShortMessage.CONTINUE)
 				{
-					this.midiHost.sendMidiContinue();
+					this.midiHost.onMidiContinue();
 				}
 				else if (command == ShortMessage.STOP)
 				{
-					this.midiHost.sendMidiStop();
+					this.midiHost.onMidiStop();
 				}
 			}
-		}
-	}
-
-	// PRIVATE METHODS
-	
-	private void
-	handleNoteOff (ShortMessage inMessage)
-	{
-		this.midiHost.sendMidiNoteOff(inMessage.getData1 ());
-	}
-	
-	private void
-	handleNoteOn (ShortMessage inMessage)
-	{
-		if (inMessage.getData2 () == 0)
-		{
-			handleNoteOff(inMessage);
-		}
-		else
-		{
-			this.midiHost.sendMidiNoteOn(inMessage.getData1 (), inMessage.getData2 ());
+			else if (this.device == this.midiHost.getMidiInputDevice ())
+			{
+				if (shortMessage.getCommand() == ShortMessage.NOTE_ON)
+				{
+					if (shortMessage.getData2() == 0)
+					{
+						this.midiHost.onMidiNoteOff(shortMessage.getData1(), 0);
+					}
+					else
+					{
+						this.midiHost.onMidiNoteOn(shortMessage.getData1(), shortMessage.getData2());
+					}
+				}
+				else if (shortMessage.getCommand() == ShortMessage.NOTE_OFF)
+				{
+					this.midiHost.onMidiNoteOff(shortMessage.getData1(), shortMessage.getData2());
+				}
+			}
 		}
 	}
 

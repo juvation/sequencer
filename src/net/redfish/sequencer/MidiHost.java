@@ -19,6 +19,10 @@ import javax.sound.midi.Transmitter;
 
 // CLASS
 
+// changed "send" to "on"
+// as this is usually used for reception
+// entities can send shit easily without a MidiHost
+
 public interface MidiHost
 {
 	// PUBLIC ABSTRACT METHODS
@@ -27,48 +31,43 @@ public interface MidiHost
 	getMidiChannel0 ();
 	
 	public abstract MidiDevice
+	getMidiClockDevice ();
+	
+	public abstract MidiDevice
 	getMidiInputDevice ();
 	
 	public abstract MidiDevice
 	getMidiOutputDevice ();
 	
 	public abstract void
-	sendMidiClock ();
-
-	public abstract void
-	sendMidiContinue ();
-
-	public abstract void
-	sendMidiControlChange (int inControlNumber, int inControlValue);
+	onMidiChannelPressure (int inPressure);
 	
 	public abstract void
-	sendMidiChannelPressure (int inPressure);
-	
-	public abstract void
-	sendMidiMessage (MidiMessage inMessage)
-		throws MidiUnavailableException;
+	onMidiClock ();
 
 	public abstract void
-	sendMidiMessages (MidiMessage[] inMessages)
-		throws MidiUnavailableException;
+	onMidiContinue ();
 
 	public abstract void
-	sendMidiNoteOff (int inNoteNumber);
+	onMidiControlChange (int inControlNumber, int inControlValue);
 	
 	public abstract void
-	sendMidiNoteOn (int inNoteNumber, int inVelocity);
+	onMidiNoteOff (int inNoteNumber, int inVelocity);
 	
 	public abstract void
-	sendMidiPitchBend (int inLSB, int inMSB);
+	onMidiNoteOn (int inNoteNumber, int inVelocity);
 	
 	public abstract void
-	sendMidiProgramChange (int inPatchNumber);
+	onMidiPitchBend (int inLSB, int inMSB);
+	
+	public abstract void
+	onMidiProgramChange (int inPatchNumber);
 
 	public abstract void
-	sendMidiStart ();
+	onMidiStart ();
 
 	public abstract void
-	sendMidiStop ();
+	onMidiStop ();
 
 }
 
