@@ -1,4 +1,6 @@
 // OptionWindow.java
+//
+// Copyright 2026 Jason Proctor
 
 // PACKAGE
 

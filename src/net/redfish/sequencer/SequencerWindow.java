@@ -1,4 +1,6 @@
 // SequencerWindow.java
+//
+// Copyright 2026 Jason Proctor
 
 // PACKAGE
 
@@ -476,11 +478,11 @@ public class SequencerWindow
 
 		// set the cell contents
 
-		for(int stepNumber = 0; stepNumber < kTableColumnCount; stepNumber++)
+		for (int stepNumber = 0; stepNumber < kTableColumnCount; stepNumber++)
 		{
 			Step	step = this.sequence.getStep(stepNumber);
 
-			for(int optionNumber = 0; optionNumber < kTableRowCount; optionNumber++)
+			for (int optionNumber = 0; optionNumber < kTableRowCount; optionNumber++)
 			{
 				Option	option = step.getOption(optionNumber);
 
@@ -513,7 +515,7 @@ public class SequencerWindow
 		probabilityPanel.add(this.probabilitySlider);
 		
 		JLabel	probabilityLabel = new JLabel("P%");
-		probabilityLabel.setLabelFor(this.probabilitySlider);
+		probabilityLabel.setLabelfor (this.probabilitySlider);
 		probabilityPanel.add(probabilityLabel);
 
 		// mute probability panel
@@ -531,7 +533,7 @@ public class SequencerWindow
 		mutePanel.add(this.muteSlider);
 
 		JLabel	muteLowerLabel = new JLabel("Mute P%");
-		muteLowerLabel.setLabelFor(this.muteSlider);
+		muteLowerLabel.setLabelfor (this.muteSlider);
 		mutePanel.add(muteLowerLabel);
 
 		// tie probability panel
@@ -549,7 +551,7 @@ public class SequencerWindow
 		tiePanel.add(this.tieSlider);
 		
 		JLabel	tieLabel = new JLabel("Tie P%");
-		tieLabel.setLabelFor(this.tieSlider);
+		tieLabel.setLabelfor (this.tieSlider);
 		tiePanel.add(tieLabel);
 
 		// ratchet probability panel
@@ -567,7 +569,7 @@ public class SequencerWindow
 		ratchetPanel.add(this.ratchetSlider);
 		
 		JLabel	ratchetLowerLabel = new JLabel("Rat P%");
-		ratchetLowerLabel.setLabelFor(this.ratchetSlider);
+		ratchetLowerLabel.setLabelfor (this.ratchetSlider);
 		ratchetPanel.add(ratchetLowerLabel);
 
 		// LOWER
@@ -613,7 +615,7 @@ public class SequencerWindow
 		velocityLowerPanel.add(this.velocityLowerSlider);
 		
 		JLabel	velocityLowerLabel = new JLabel("Velocity");
-		velocityLowerLabel.setLabelFor(this.velocityLowerSlider);
+		velocityLowerLabel.setLabelfor (this.velocityLowerSlider);
 		velocityLowerPanel.add(velocityLowerLabel);
 
 		// gate time lower panel
@@ -631,7 +633,7 @@ public class SequencerWindow
 		gateTimeLowerPanel.add(this.gateTimeLowerSlider);
 		
 		JLabel	gateTimeLowerLabel = new JLabel("Gate");
-		gateTimeLowerLabel.setLabelFor(this.gateTimeLowerSlider);
+		gateTimeLowerLabel.setLabelfor (this.gateTimeLowerSlider);
 		gateTimeLowerPanel.add(gateTimeLowerLabel);
 
 		// UPPER
@@ -677,7 +679,7 @@ public class SequencerWindow
 		velocityUpperPanel.add(this.velocityUpperSlider);
 		
 		JLabel	velocityUpperLabel = new JLabel("Velocity");
-		velocityUpperLabel.setLabelFor(this.velocityUpperSlider);
+		velocityUpperLabel.setLabelfor (this.velocityUpperSlider);
 		velocityUpperPanel.add(velocityUpperLabel);
 
 		// gate time upper panel
@@ -695,7 +697,7 @@ public class SequencerWindow
 		gateTimeUpperPanel.add(this.gateTimeUpperSlider);
 		
 		JLabel	gateTimeUpperLabel = new JLabel("Gate");
-		gateTimeUpperLabel.setLabelFor(this.gateTimeUpperSlider);
+		gateTimeUpperLabel.setLabelfor (this.gateTimeUpperSlider);
 		gateTimeUpperPanel.add(gateTimeUpperLabel);
 
 		// TOOLBAR
@@ -736,7 +738,7 @@ public class SequencerWindow
 
 		// fix to key
 		
-		JLabel	keyLabel = new JLabel ("Key:");
+		JLabel	keyLabel = new Jlabel("Key:");
 		lowerToolBar.add (keyLabel);
 		
 		List<String>	keyList = new ArrayList<String>();
@@ -1837,7 +1839,7 @@ public class SequencerWindow
 
 			int	selectedInputIndex = 0;
 			
-			for(int i = 0; i < this.midiInputDeviceList.size(); i++)
+			for (int i = 0; i < this.midiInputDeviceList.size(); i++)
 			{
 				MidiDevice			device = this.midiInputDeviceList.get(i);
 				MidiDevice.Info	info = device.getDeviceInfo();
@@ -1863,7 +1865,7 @@ public class SequencerWindow
 
 			int	selectedClockIndex = 0;
 			
-			for(int i = 0; i < this.midiClockDeviceList.size(); i++)
+			for (int i = 0; i < this.midiClockDeviceList.size(); i++)
 			{
 				MidiDevice			device = this.midiClockDeviceList.get(i);
 				MidiDevice.Info	info = device.getDeviceInfo();
@@ -1889,7 +1891,7 @@ public class SequencerWindow
 
 			int	selectedOutputIndex = 0;
 			
-			for(int i = 0; i < this.midiOutputDeviceList.size(); i++)
+			for (int i = 0; i < this.midiOutputDeviceList.size(); i++)
 			{
 				MidiDevice			device = this.midiOutputDeviceList.get (i);
 				MidiDevice.Info	info = device.getDeviceInfo();
@@ -1963,13 +1965,13 @@ public class SequencerWindow
 		// MIDI INPUT DEVICE
 		
 		{
-			JLabel	label = new JLabel ("Input:");
+			JLabel	label = new Jlabel("Input:");
 			panel.add(label);
 	
 			// build the name array for the input device popup
 			String[]	inputDeviceNameArray = new String[this.midiInputDeviceList.size()];
 	
-			for(int i = 0; i < this.midiInputDeviceList.size(); i++)
+			for (int i = 0; i < this.midiInputDeviceList.size(); i++)
 			{
 				MidiDevice	device = this.midiInputDeviceList.get (i);
 				inputDeviceNameArray[i] = device.getDeviceInfo().getName();
@@ -1989,13 +1991,13 @@ public class SequencerWindow
 		// MIDI CLOCK DEVICE
 		
 		{
-			JLabel	label = new JLabel ("Clock:");
+			JLabel	label = new JLabel("Clock:");
 			panel.add (label);
 	
 			// build the name array for the input device popup
 			String[]	clockDeviceNameArray = new String[this.midiClockDeviceList.size()];
 	
-			for(int i = 0; i < this.midiClockDeviceList.size(); i++)
+			for (int i = 0; i < this.midiClockDeviceList.size(); i++)
 			{
 				MidiDevice	device = this.midiClockDeviceList.get (i);
 				clockDeviceNameArray[i] = device.getDeviceInfo().getName();
@@ -2010,13 +2012,13 @@ public class SequencerWindow
 		
 		// MIDI OUTPUT DEVICE
 		{
-			JLabel	label = new JLabel ("Output:");
+			JLabel	label = new Jlabel("Output:");
 			panel.add (label);
 			
 			// build the name array for the output device popup
 			String[]	outputDeviceNameArray = new String[this.midiOutputDeviceList.size()];
 	
-			for(int i = 0; i < this.midiOutputDeviceList.size(); i++)
+			for (int i = 0; i < this.midiOutputDeviceList.size(); i++)
 			{
 				MidiDevice	device = this.midiOutputDeviceList.get(i);
 				outputDeviceNameArray[i] = device.getDeviceInfo().getName();
@@ -2039,7 +2041,7 @@ public class SequencerWindow
 			
 			String[]	channelNames = new String[16];
 			
-			for(int i = 0; i < 16; i++)
+			for (int i = 0; i < 16; i++)
 			{
 				channelNames [i] = Integer.toString(i + 1);
 			}
@@ -2095,7 +2097,7 @@ System.err.println ("using JavaMIDI for MIDI");
 		this.midiReceiverList = new ArrayList<Receiver>();
 		this.midiTransmitterList = new ArrayList<Transmitter>();
 		
-		for(int i = 0; i < deviceInfoArray.length; i++)
+		for (int i = 0; i < deviceInfoArray.length; i++)
 		{
 			MidiDevice.Info	deviceInfo = deviceInfoArray [i];
 			
@@ -2278,14 +2280,14 @@ System.err.println ("using JavaMIDI for MIDI");
 		TableModel	model = this.table.getModel();
 		DefaultTableColumnModel	columnModel = (DefaultTableColumnModel) table.getColumnModel();
 			
-		for(int col = 0; col < this.table.getColumnCount(); col++)
+		for (int col = 0; col < this.table.getColumnCount(); col++)
 		{
 			TableColumn	column = columnModel.getColumn(col);
 			
 			int	width = 0;
 
 			// determine widest row in column
-			for(int row = 0; row < this.table.getRowCount(); row++)
+			for (int row = 0; row < this.table.getRowCount(); row++)
 			{
 				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
 				Component	component = renderer.getTableCellRendererComponent
@@ -2304,12 +2306,12 @@ System.err.println ("using JavaMIDI for MIDI");
 	private void
 	packRows(int inMargin)
 	{
-		for(int row = 0; row < this.table.getRowCount(); row++)
+		for (int row = 0; row < this.table.getRowCount(); row++)
 		{
 			int	height = this.table.getRowHeight();
 			
 			// determine highest cell in row
-			for(int col = 0; col < this.table.getColumnCount(); col++)
+			for (int col = 0; col < this.table.getColumnCount(); col++)
 			{
 				TableCellRenderer	renderer = this.table.getCellRenderer(row, col);
 				Component	component = this.table.prepareRenderer(renderer, row, col);

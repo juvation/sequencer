@@ -1,4 +1,6 @@
 // KeyMapper.java
+//
+// Copyright 2026 Jason Proctor
 
 // I wish I could come up with a better way to do this
 // but even the AI gets it wrong, LOL
