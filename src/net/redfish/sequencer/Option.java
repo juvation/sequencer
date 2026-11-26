@@ -12,6 +12,8 @@ package net.redfish.sequencer;
 
 public class Option
 {
+	// PUBLIC CONSTRUCTORS
+
 	public Option()
 	{
 		reset();
@@ -24,6 +26,34 @@ public class Option
 	{
 		copyFrom(inCopy);
 	}
+
+	// OBJECT OVERRIDES
+
+	public String
+	toString()
+	{
+		StringBuilder	sb = new StringBuilder();
+		sb.append("net.redfish.sequencer.Option");
+		sb.append(" probability: " + this.probability);
+		sb.append(" note: " + this.note);
+		sb.append(" noteLower: " + this.noteLower);
+		sb.append(" noteUpper: " + this.noteUpper);
+		sb.append(" velocity: " + this.velocity);
+		sb.append(" velocityLower: " + this.velocityLower);
+		sb.append(" velocityUpper: " + this.velocityUpper);
+		sb.append(" gateTime: " + this.gateTime);
+		sb.append(" gateTimeLower: " + this.gateTimeLower);
+		sb.append(" gateTimeUpper: " + this.gateTimeUpper);
+		sb.append(" gateTimeUpper: " + this.gateTimeUpper);
+		sb.append(" gateTimeUpper: " + this.gateTimeUpper);
+		sb.append(" muteProbability: " + this.muteProbability);
+		sb.append(" tieProbability: " + this.tieProbability);
+		sb.append(" ratchetProbability: " + this.ratchetProbability);
+
+		return sb.toString();
+	}
+
+	// PUBLIC METHODS
 
 	// note we have to copy the computed fields
 	// as we may be copying the selected option

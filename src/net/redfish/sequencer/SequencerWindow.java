@@ -768,13 +768,6 @@ public class SequencerWindow
 		
 		loadMidiChannelPreference();
 
-		// vary
-
-		JButton	varyButton = new JButton("Vary...");
-		varyButton.setActionCommand("VARY");
-		varyButton.addActionListener(this);
-		lowerToolBar.add(varyButton);
-		
 		// open/save
 
 		JButton	openButton = new JButton("Open...");
@@ -791,6 +784,13 @@ public class SequencerWindow
 		saveAsButton.setActionCommand("SAVE_AS");
 		saveAsButton.addActionListener(this);
 		lowerToolBar.add(saveAsButton);
+		
+		// vary
+
+		JButton	varyButton = new JButton("Vary...");
+		varyButton.setActionCommand("VARY");
+		varyButton.addActionListener(this);
+		lowerToolBar.add(varyButton);
 		
 		// copy/paste/swap
 
@@ -1170,9 +1170,15 @@ public class SequencerWindow
 		}
 		else if (actionCommand.equalsIgnoreCase("VARY"))
 		{
-			VaryWindow	varyWindow = new VaryWindow();
-			varyWindow.setLocationRelativeTo(null);
-			varyWindow.setVisible(true);
+			if (this.varyWindow == null)
+			{
+				this.varyWindow = new VaryWindow();
+				this.varyWindow.setLocationRelativeTo(null);
+			}
+
+			this.varyWindow.setVisible(true);
+			this.varyWindow.toFront();
+			this.varyWindow.requestFocus();
 		}
 		else
 		{
@@ -1507,12 +1513,46 @@ public class SequencerWindow
 		return step.getOption(inOptionNumber);
 	}
 
+	// limit is exclusive
 	public int
 	getRandomPositiveInt(int inLimit)
 	{
 		int	number = this.random.nextInt();
 
 		return Math.abs(number) % inLimit;
+	}
+
+	// ASSUME lower < upper
+	// bounds are inclusive
+	public int
+	getRandomIntInRange(int inLower, int inUpper)
+	{
+		if (inLower > inUpper)
+		{
+			System.err.println("getRandomIntInRange() with lower > upper");
+			return inLower;
+		}
+
+		System.err.println("getRandomIntInRange() with lower " + inLower + " and upper " + inUpper);
+
+		int	range = inUpper - inLower;
+		range++;
+
+		System.err.println("getRandomIntInRange() range = " + range);
+
+		int	random = (int) Math.abs(this.random.nextInt());
+
+		System.err.println("getRandomIntInRange() random = " + random);
+
+		random %= range;
+
+		System.err.println("getRandomIntInRange() random modulus'd = " + random);
+
+		int	result = inLower + (random % range);
+
+		System.err.println("getRandomIntInRange() result = " + result);
+
+		return result;
 	}
 
 	public Option
@@ -2704,6 +2744,9 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	private TimerTask
 	timerTask = null;
+
+	private VaryWindow
+	varyWindow;
 
 	private JSlider
 	velocityLowerSlider = null;

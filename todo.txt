@@ -18,4 +18,5 @@ TODO
 midi config changes
 gate time
 a good vary
+save file should have more stuff - key
 
