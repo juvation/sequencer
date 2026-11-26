@@ -859,6 +859,7 @@ public class SequencerWindow
 			
 			if (closeWindow)
 			{
+				stop();
 				System.exit(0);
 			}
 		}
@@ -1558,6 +1559,8 @@ public class SequencerWindow
 		// do we trust this?
 		sendMidiControlChange(0x7b, 0x00);
 
+		System.err.println("is current option valid? " + this.currentOption.valid);
+
 		// ...just in case we don't...
 		if (this.currentOption.valid)
 		{
@@ -1598,11 +1601,13 @@ public class SequencerWindow
 	{
 		System.err.println("sendMidiNoteOff(" + inNoteNumber + ")");
 
+		// do this discretely so that we don't get a confusing "midi note on" log line...
 		try
 		{
-			// the person responsible for the velocity=0 note off
-			// should be eviscerated with a blunt spoon
-			sendMidiNoteOn(inNoteNumber, 0);
+			ShortMessage	message = new ShortMessage();
+			message.setMessage(ShortMessage.NOTE_ON, this.midiChannel0, inNoteNumber, 0);
+			
+			sendMidiMessage(message);
 		}
 		catch (Throwable inThrowable)
 		{
@@ -1849,8 +1854,6 @@ public class SequencerWindow
 		{
 			System.err.println("not running");
 		}
-
-		this.currentOption.reset();
 
 		sendMidiAllNotesOff();
 	}
@@ -2576,6 +2579,8 @@ System.err.println ("using JavaMIDI for MIDI");
 			if (subtick == this.currentOption.gateTime / 12)
 			{
 				sendMidiNoteOff(this.currentOption.note);
+
+				System.err.println("turning currentoption.valid off");
 
 				this.currentOption.valid = false;
 			}
