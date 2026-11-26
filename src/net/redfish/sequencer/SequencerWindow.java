@@ -1087,7 +1087,7 @@ public class SequencerWindow
 
 						// copy the option!
 						// it might get pasted twice and this is only a reference
-						setOption(new Option(option));
+						setSelectedOption(new Option(option));
 					}
 					else
 					{
@@ -1155,7 +1155,7 @@ public class SequencerWindow
 							Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, this);
 
 							// and now paste the saved option into place
-							setOption(pasteOption);
+							setSelectedOption(pasteOption);
 						}
 					}
 					catch(Exception inException)
@@ -1450,7 +1450,7 @@ public class SequencerWindow
 				option.noteLower = inNote;
 				option.noteUpper = inNote;
 	
-				setOption(option);
+				setSelectedOption(option);
 	
 				if (!this.isRunning)
 				{
@@ -1559,9 +1559,7 @@ public class SequencerWindow
 		// do we trust this?
 		sendMidiControlChange(0x7b, 0x00);
 
-		System.err.println("is current option valid? " + this.currentOption.valid);
-
-		// ...just in case we don't...
+		// and just in case we don't...
 		if (this.currentOption.valid)
 		{
 			sendMidiNoteOff(currentOption.note);
@@ -1650,7 +1648,19 @@ public class SequencerWindow
 	}
 	
 	public void
-	setOption(Option inOption)
+	setOption(Option inOption, int inStepNumber, int inOptionNumber)
+	{
+		this.sequence.setOption(inStepNumber, inOptionNumber, inOption);
+		this.sequenceTable.setValueAt(inOption, inOptionNumber, inStepNumber);
+
+		if (this.changesModifySequence)
+		{
+			setSequenceModified(true, inStepNumber == 0);
+		}
+	}
+
+	public void
+	setSelectedOption(Option inOption)
 	{
 		int	stepNumber = this.sequenceTable.getSelectedColumn();
 		int	optionNumber = this.sequenceTable.getSelectedRow();
@@ -2579,8 +2589,6 @@ System.err.println ("using JavaMIDI for MIDI");
 			if (subtick == this.currentOption.gateTime / 12)
 			{
 				sendMidiNoteOff(this.currentOption.note);
-
-				System.err.println("turning currentoption.valid off");
 
 				this.currentOption.valid = false;
 			}

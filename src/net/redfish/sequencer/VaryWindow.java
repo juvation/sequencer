@@ -178,7 +178,7 @@ public class VaryWindow
 			this.varyMuteProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
 			this.varyMuteProbabilitySlider.setMinimum(0);
 			this.varyMuteProbabilitySlider.setMaximum(100);
-			this.varyMuteProbabilitySlider.setValue(10);
+			this.varyMuteProbabilitySlider.setValue(50);
 			varyMuteProbabilityLabel.setLabelFor(this.varyMuteProbabilitySlider);
 			varyMuteProbabilityPanel.add(this.varyMuteProbabilitySlider);
 		}
@@ -198,7 +198,7 @@ public class VaryWindow
 			this.varyTieProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
 			this.varyTieProbabilitySlider.setMinimum(0);
 			this.varyTieProbabilitySlider.setMaximum(100);
-			this.varyTieProbabilitySlider.setValue(10);
+			this.varyTieProbabilitySlider.setValue(50);
 			varyTieProbabilityLabel.setLabelFor(this.varyTieProbabilitySlider);
 			varyTieProbabilityPanel.add(this.varyTieProbabilitySlider);
 		}
@@ -218,7 +218,7 @@ public class VaryWindow
 			this.varyRatchetProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
 			this.varyRatchetProbabilitySlider.setMinimum(0);
 			this.varyRatchetProbabilitySlider.setMaximum(100);
-			this.varyRatchetProbabilitySlider.setValue(10);
+			this.varyRatchetProbabilitySlider.setValue(50);
 			varyRatchetProbabilityLabel.setLabelFor(this.varyRatchetProbabilitySlider);
 			varyRatchetProbabilityPanel.add(this.varyRatchetProbabilitySlider);
 		}
@@ -292,7 +292,15 @@ public class VaryWindow
 		else
 		if (actionCommand.equalsIgnoreCase("VARY_SELECTED_OPTION"))
 		{
-			varySelectedOption();
+			Option	option = SequencerWindow.getInstance().getSelectedOption();
+	
+			if (option != null)
+			{
+				if (varyOption(option))
+				{
+					SequencerWindow.getInstance().setSelectedOption(option);
+				}
+			}
 		}
 		else
 		if (actionCommand.equalsIgnoreCase("VARY_SEQUENCE"))
@@ -576,75 +584,80 @@ public class VaryWindow
 		return varied;
 	}
 
-	private void
-	varySelectedOption()
+	private boolean
+	varyOption(Option inOption)
 	{
-		Option	option = SequencerWindow.getInstance().getSelectedOption();
-
-		if (option == null)
-		{
-			return;
-		}
-
 		boolean	varied = false;
 
 		// probability
 
-		if (varyProbability(option))
+		if (varyProbability(inOption))
 		{
 			varied = true;
 		}
 
 		// notes
 
-		if (varyNotes(option))
+		if (varyNotes(inOption))
 		{
 			varied = true;
 		}
 
 		// velocities
 
-		if (varyVelocities(option))
+		if (varyVelocities(inOption))
 		{
 			varied = true;
 		}
 
 		// gate times
 
-		if (varyGateTimes(option))
+		if (varyGateTimes(inOption))
 		{
 			varied = true;
 		}
 
 		// probability
 
-		if (varyMuteProbability(option))
+		if (varyMuteProbability(inOption))
 		{
 			varied = true;
 		}
 
 		// probability
 
-		if (varyTieProbability(option))
+		if (varyTieProbability(inOption))
 		{
 			varied = true;
 		}
 
 		// probability
 
-		if (varyRatchetProbability(option))
+		if (varyRatchetProbability(inOption))
 		{
 			varied = true;
 		}
 
 		// put further variations here
 
-		SequencerWindow.getInstance().setOption(option);
+		return varied;
 	}
 
 	private void
 	varySequence()
 	{
+		for (int stepNumber = 0; stepNumber < 16; stepNumber++)
+		{
+			for (int optionNumber = 0; optionNumber < 2; optionNumber++)
+			{
+				Option	option = SequencerWindow.getInstance().getOption(stepNumber, optionNumber);
+
+				if (varyOption(option))
+				{
+					SequencerWindow.getInstance().setOption(option, stepNumber, optionNumber);
+				}
+			}
+		}
 	}
 
 	// PRIVATE DATA
