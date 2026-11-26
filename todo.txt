@@ -12,11 +12,11 @@ midi sync
 all notes off isn't good enough (only sometimes, LFS)
 recording notes from keyboard
 separate sync input
+a good vary
 
 TODO
 --
 midi config changes
 gate time
-a good vary
 save file should have more stuff - key
 
