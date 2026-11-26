@@ -28,7 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JSlider;
 import javax.swing.KeyStroke;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -65,83 +65,163 @@ public class VaryWindow
 		varyPanel.setLayout(new BoxLayout(varyPanel, BoxLayout.Y_AXIS));
 		getContentPane().add(varyPanel, BorderLayout.CENTER);
 
+		// probability
+
+		{
+			this.varyProbabilityCheckBox = new JCheckBox("Vary Probability");
+			varyPanel.add(this.varyProbabilityCheckBox);
+
+			JPanel	varyProbabilityPanel = new JPanel();
+			varyProbabilityPanel.setLayout(new BoxLayout(varyProbabilityPanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyProbabilityPanel);
+	
+			JLabel	varyProbabilityLabel = new JLabel("Variation:");
+			varyProbabilityPanel.add(varyProbabilityLabel);
+			this.varyProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyProbabilitySlider.setMinimum(0);
+			this.varyProbabilitySlider.setMaximum(100);
+			this.varyProbabilitySlider.setValue(10);
+			varyProbabilityLabel.setLabelFor(this.varyProbabilitySlider);
+			varyProbabilityPanel.add(this.varyProbabilitySlider);
+		}
+
 		// notes
 
-		this.varyNoteLowerCheckBox = new JCheckBox("Vary Note Lower");
-		varyPanel.add(this.varyNoteLowerCheckBox);
+		{
+			this.varyNoteLowerCheckBox = new JCheckBox("Vary Note Lower");
+			varyPanel.add(this.varyNoteLowerCheckBox);
+	
+			this.varyNoteUpperCheckBox = new JCheckBox("Vary Note Upper");
+			varyPanel.add(this.varyNoteUpperCheckBox);
+	
+			this.varyNoteKeepSameCheckBox = new JCheckBox("Keep Notes Equal");
+			varyPanel.add(this.varyNoteKeepSameCheckBox);
+	
+			JPanel	varyNoteRangePanel = new JPanel();
+			varyNoteRangePanel.setLayout(new BoxLayout(varyNoteRangePanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyNoteRangePanel);
+	
+			JLabel	varyNoteRangeLabel = new JLabel("Variation:");
+			varyNoteRangePanel.add(varyNoteRangeLabel);
+			this.varyNoteRangeSlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyNoteRangeSlider.setMinimum(0);
+			this.varyNoteRangeSlider.setMaximum(127);
+			this.varyNoteRangeSlider.setValue(10);
+			varyNoteRangeLabel.setLabelFor(this.varyNoteRangeSlider);
+			varyNoteRangePanel.add(this.varyNoteRangeSlider);
+		}
 
-		this.varyNoteUpperCheckBox = new JCheckBox("Vary Note Upper");
-		varyPanel.add(this.varyNoteUpperCheckBox);
+    // velocity
 
-		this.varyNoteKeepSameCheckBox = new JCheckBox("Keep Notes Equal");
-		varyPanel.add(this.varyNoteKeepSameCheckBox);
-
-		JPanel	varyNoteRangePanel = new JPanel();
-		varyNoteRangePanel.setLayout(new BoxLayout(varyNoteRangePanel, BoxLayout.X_AXIS));
-		varyPanel.add(varyNoteRangePanel);
-
-		JLabel	varyNoteRangeLabel = new JLabel("Vary Note Range:");
-		varyNoteRangePanel.add(varyNoteRangeLabel);
-		this.varyNoteRangeTextField = new JTextField(10);
-		this.varyNoteRangeTextField.setText("5");
-		varyNoteRangeLabel.setLabelFor(this.varyNoteRangeTextField);
-		varyNoteRangePanel.add(this.varyNoteRangeTextField);
-
-		// constrain the note range to 0-127
-		AbstractDocument	varyNoteRangeDocument = (AbstractDocument) this.varyNoteRangeTextField.getDocument();
-		varyNoteRangeDocument.setDocumentFilter(new NumbersOnlyDocumentFilter(this.varyNoteRangeTextField, 0, 127));
-
-    // gateTime
-
-		this.varyVelocityLowerCheckBox = new JCheckBox("Vary Velocity Lower");
-		varyPanel.add(this.varyVelocityLowerCheckBox);
-
-		this.varyVelocityUpperCheckBox = new JCheckBox("Vary Velocity Upper");
-		varyPanel.add(this.varyVelocityUpperCheckBox);
-
-		this.varyVelocityKeepSameCheckBox = new JCheckBox("Keep Velocities Equal");
-		varyPanel.add(this.varyVelocityKeepSameCheckBox);
-
-		JPanel	varyVelocityRangePanel = new JPanel();
-		varyVelocityRangePanel.setLayout(new BoxLayout(varyVelocityRangePanel, BoxLayout.X_AXIS));
-		varyPanel.add(varyVelocityRangePanel);
-
-		JLabel	varyVelocityRangeLabel = new JLabel("Vary Velocity Range:");
-		varyVelocityRangePanel.add(varyVelocityRangeLabel);
-		this.varyVelocityRangeTextField = new JTextField(10);
-		this.varyVelocityRangeTextField.setText("20");
-		varyVelocityRangeLabel.setLabelFor(this.varyVelocityRangeTextField);
-		varyVelocityRangePanel.add(this.varyVelocityRangeTextField);
-
-		// constrain the note range to 0-127
-		AbstractDocument	varyVelocityRangeDocument = (AbstractDocument) this.varyVelocityRangeTextField.getDocument();
-		varyVelocityRangeDocument.setDocumentFilter(new NumbersOnlyDocumentFilter(this.varyVelocityRangeTextField, 0, 127));
+		{
+			this.varyVelocityLowerCheckBox = new JCheckBox("Vary Velocity Lower");
+			varyPanel.add(this.varyVelocityLowerCheckBox);
+	
+			this.varyVelocityUpperCheckBox = new JCheckBox("Vary Velocity Upper");
+			varyPanel.add(this.varyVelocityUpperCheckBox);
+	
+			this.varyVelocityKeepSameCheckBox = new JCheckBox("Keep Velocities Equal");
+			varyPanel.add(this.varyVelocityKeepSameCheckBox);
+	
+			JPanel	varyVelocityRangePanel = new JPanel();
+			varyVelocityRangePanel.setLayout(new BoxLayout(varyVelocityRangePanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyVelocityRangePanel);
+	
+			JLabel	varyVelocityRangeLabel = new JLabel("Variation:");
+			varyVelocityRangePanel.add(varyVelocityRangeLabel);
+			this.varyVelocityRangeSlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyVelocityRangeSlider.setMinimum(0);
+			this.varyVelocityRangeSlider.setMaximum(127);
+			this.varyNoteRangeSlider.setValue(20);
+			varyVelocityRangeLabel.setLabelFor(this.varyVelocityRangeSlider);
+			varyVelocityRangePanel.add(this.varyVelocityRangeSlider);
+		}
 
 		// gate time
 
-		this.varyGateTimeLowerCheckBox = new JCheckBox("Vary Gate Time Lower");
-		varyPanel.add(this.varyGateTimeLowerCheckBox);
+		{
+			this.varyGateTimeLowerCheckBox = new JCheckBox("Vary Gate Time Lower");
+			varyPanel.add(this.varyGateTimeLowerCheckBox);
+	
+			this.varyGateTimeUpperCheckBox = new JCheckBox("Vary Gate Time Upper");
+			varyPanel.add(this.varyGateTimeUpperCheckBox);
+	
+			this.varyGateTimeKeepSameCheckBox = new JCheckBox("Keep Gate Times Equal");
+			varyPanel.add(this.varyGateTimeKeepSameCheckBox);
+	
+			JPanel	varyGateTimeRangePanel = new JPanel();
+			varyGateTimeRangePanel.setLayout(new BoxLayout(varyGateTimeRangePanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyGateTimeRangePanel);
+	
+			JLabel	varyGateTimeRangeLabel = new JLabel("Variation:");
+			varyGateTimeRangePanel.add(varyGateTimeRangeLabel);
+			this.varyGateTimeRangeSlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyGateTimeRangeSlider.setMinimum(0);
+			this.varyGateTimeRangeSlider.setMaximum(127);
+			this.varyNoteRangeSlider.setValue(20);
+			varyGateTimeRangeLabel.setLabelFor(this.varyGateTimeRangeSlider);
+			varyGateTimeRangePanel.add(this.varyGateTimeRangeSlider);
+		}
 
-		this.varyGateTimeUpperCheckBox = new JCheckBox("Vary Gate Time Upper");
-		varyPanel.add(this.varyGateTimeUpperCheckBox);
+		// mute probability
 
-		this.varyGateTimeKeepSameCheckBox = new JCheckBox("Keep Gate Times Equal");
-		varyPanel.add(this.varyGateTimeKeepSameCheckBox);
+		{
+			this.varyMuteProbabilityCheckBox = new JCheckBox("Vary Mute Probability");
+			varyPanel.add(this.varyMuteProbabilityCheckBox);
 
-		JPanel	varyGateTimeRangePanel = new JPanel();
-		varyGateTimeRangePanel.setLayout(new BoxLayout(varyGateTimeRangePanel, BoxLayout.X_AXIS));
-		varyPanel.add(varyGateTimeRangePanel);
+			JPanel	varyMuteProbabilityPanel = new JPanel();
+			varyMuteProbabilityPanel.setLayout(new BoxLayout(varyMuteProbabilityPanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyMuteProbabilityPanel);
+	
+			JLabel	varyMuteProbabilityLabel = new JLabel("Variation:");
+			varyMuteProbabilityPanel.add(varyMuteProbabilityLabel);
+			this.varyMuteProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyMuteProbabilitySlider.setMinimum(0);
+			this.varyMuteProbabilitySlider.setMaximum(100);
+			this.varyMuteProbabilitySlider.setValue(10);
+			varyMuteProbabilityLabel.setLabelFor(this.varyMuteProbabilitySlider);
+			varyMuteProbabilityPanel.add(this.varyMuteProbabilitySlider);
+		}
 
-		JLabel	varyGateTimeRangeLabel = new JLabel("Vary Gate Time Range:");
-		varyGateTimeRangePanel.add(varyGateTimeRangeLabel);
-		this.varyGateTimeRangeTextField = new JTextField(10);
-		this.varyGateTimeRangeTextField.setText("20");
-		varyGateTimeRangeLabel.setLabelFor(this.varyGateTimeRangeTextField);
-		varyGateTimeRangePanel.add(this.varyGateTimeRangeTextField);
+		// tie probability
 
-		// constrain the note range to 0-127
-		AbstractDocument	varyGateTimeRangeDocument = (AbstractDocument) this.varyGateTimeRangeTextField.getDocument();
-		varyGateTimeRangeDocument.setDocumentFilter(new NumbersOnlyDocumentFilter(this.varyGateTimeRangeTextField, 0, 127));
+		{
+			this.varyTieProbabilityCheckBox = new JCheckBox("Vary Tie Probability");
+			varyPanel.add(this.varyTieProbabilityCheckBox);
+
+			JPanel	varyTieProbabilityPanel = new JPanel();
+			varyTieProbabilityPanel.setLayout(new BoxLayout(varyTieProbabilityPanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyTieProbabilityPanel);
+	
+			JLabel	varyTieProbabilityLabel = new JLabel("Variation:");
+			varyTieProbabilityPanel.add(varyTieProbabilityLabel);
+			this.varyTieProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyTieProbabilitySlider.setMinimum(0);
+			this.varyTieProbabilitySlider.setMaximum(100);
+			this.varyTieProbabilitySlider.setValue(10);
+			varyTieProbabilityLabel.setLabelFor(this.varyTieProbabilitySlider);
+			varyTieProbabilityPanel.add(this.varyTieProbabilitySlider);
+		}
+
+		// ratchet probability
+
+		{
+			this.varyRatchetProbabilityCheckBox = new JCheckBox("Vary Ratchet Probability");
+			varyPanel.add(this.varyRatchetProbabilityCheckBox);
+
+			JPanel	varyRatchetProbabilityPanel = new JPanel();
+			varyRatchetProbabilityPanel.setLayout(new BoxLayout(varyRatchetProbabilityPanel, BoxLayout.X_AXIS));
+			varyPanel.add(varyRatchetProbabilityPanel);
+	
+			JLabel	varyRatchetProbabilityLabel = new JLabel("Variation:");
+			varyRatchetProbabilityPanel.add(varyRatchetProbabilityLabel);
+			this.varyRatchetProbabilitySlider = new JSlider(JSlider.HORIZONTAL);
+			this.varyRatchetProbabilitySlider.setMinimum(0);
+			this.varyRatchetProbabilitySlider.setMaximum(100);
+			this.varyRatchetProbabilitySlider.setValue(10);
+			varyRatchetProbabilityLabel.setLabelFor(this.varyRatchetProbabilitySlider);
+			varyRatchetProbabilityPanel.add(this.varyRatchetProbabilitySlider);
+		}
 
 		// toolbar
 
@@ -234,7 +314,7 @@ public class VaryWindow
 	{
 		boolean	varied = false;
 
-		int	variation = Integer.parseInt(this.varyGateTimeRangeTextField.getText());
+		int	variation = this.varyGateTimeRangeSlider.getValue();
 
 		if (variation > 0)
 		{
@@ -285,11 +365,36 @@ public class VaryWindow
 	}
 
 	private boolean
+	varyMuteProbability(Option inOption)
+	{
+		boolean	varied = false;
+
+		if (this.varyMuteProbabilityCheckBox.isSelected())
+		{
+			int	variation = this.varyMuteProbabilitySlider.getValue();
+
+			if (variation > 0)
+			{
+				int	lowerBound = (int) Math.max(inOption.muteProbability - (variation / 2), 0);
+				int	upperBound = (int) Math.min(inOption.muteProbability + (variation / 2), 100);
+
+				System.err.println("lower bound = " + lowerBound + ", upper bound = " + upperBound);
+	
+				inOption.muteProbability = SequencerWindow.getInstance().getRandomIntInRange(lowerBound, upperBound);
+	
+				varied = true;
+			}
+		}
+
+		return varied;
+	}
+
+	private boolean
 	varyNotes(Option inOption)
 	{
 		boolean	varied = false;
 
-		int	variation = Integer.parseInt(this.varyNoteRangeTextField.getText());
+		int	variation = this.varyNoteRangeSlider.getValue();
 
 		if (variation > 0)
 		{
@@ -340,11 +445,86 @@ public class VaryWindow
 	}
 
 	private boolean
+	varyProbability(Option inOption)
+	{
+		boolean	varied = false;
+
+		if (this.varyProbabilityCheckBox.isSelected())
+		{
+			int	variation = this.varyProbabilitySlider.getValue();
+
+			if (variation > 0)
+			{
+				int	lowerBound = (int) Math.max(inOption.probability - (variation / 2), 0);
+				int	upperBound = (int) Math.min(inOption.probability + (variation / 2), 100);
+
+				System.err.println("lower bound = " + lowerBound + ", upper bound = " + upperBound);
+	
+				inOption.probability = SequencerWindow.getInstance().getRandomIntInRange(lowerBound, upperBound);
+	
+				varied = true;
+			}
+		}
+
+		return varied;
+	}
+
+	private boolean
+	varyRatchetProbability(Option inOption)
+	{
+		boolean	varied = false;
+
+		if (this.varyRatchetProbabilityCheckBox.isSelected())
+		{
+			int	variation = this.varyRatchetProbabilitySlider.getValue();
+
+			if (variation > 0)
+			{
+				int	lowerBound = (int) Math.max(inOption.ratchetProbability - (variation / 2), 0);
+				int	upperBound = (int) Math.min(inOption.ratchetProbability + (variation / 2), 100);
+
+				System.err.println("lower bound = " + lowerBound + ", upper bound = " + upperBound);
+	
+				inOption.ratchetProbability = SequencerWindow.getInstance().getRandomIntInRange(lowerBound, upperBound);
+	
+				varied = true;
+			}
+		}
+
+		return varied;
+	}
+
+	private boolean
+	varyTieProbability(Option inOption)
+	{
+		boolean	varied = false;
+
+		if (this.varyTieProbabilityCheckBox.isSelected())
+		{
+			int	variation = this.varyTieProbabilitySlider.getValue();
+
+			if (variation > 0)
+			{
+				int	lowerBound = (int) Math.max(inOption.tieProbability - (variation / 2), 0);
+				int	upperBound = (int) Math.min(inOption.tieProbability + (variation / 2), 100);
+
+				System.err.println("lower bound = " + lowerBound + ", upper bound = " + upperBound);
+	
+				inOption.tieProbability = SequencerWindow.getInstance().getRandomIntInRange(lowerBound, upperBound);
+	
+				varied = true;
+			}
+		}
+
+		return varied;
+	}
+
+	private boolean
 	varyVelocities(Option inOption)
 	{
 		boolean	varied = false;
 
-		int	variation = Integer.parseInt(this.varyVelocityRangeTextField.getText());
+		int	variation = this.varyVelocityRangeSlider.getValue();
 
 		if (variation > 0)
 		{
@@ -399,8 +579,6 @@ public class VaryWindow
 	private void
 	varySelectedOption()
 	{
-		// notes
-
 		Option	option = SequencerWindow.getInstance().getSelectedOption();
 
 		if (option == null)
@@ -409,6 +587,13 @@ public class VaryWindow
 		}
 
 		boolean	varied = false;
+
+		// probability
+
+		if (varyProbability(option))
+		{
+			varied = true;
+		}
 
 		// notes
 
@@ -427,6 +612,27 @@ public class VaryWindow
 		// gate times
 
 		if (varyGateTimes(option))
+		{
+			varied = true;
+		}
+
+		// probability
+
+		if (varyMuteProbability(option))
+		{
+			varied = true;
+		}
+
+		// probability
+
+		if (varyTieProbability(option))
+		{
+			varied = true;
+		}
+
+		// probability
+
+		if (varyRatchetProbability(option))
 		{
 			varied = true;
 		}
@@ -452,8 +658,14 @@ public class VaryWindow
 	private JCheckBox
 	varyGateTimeUpperCheckBox;
 
-	private JTextField
-	varyGateTimeRangeTextField;
+	private JSlider
+	varyGateTimeRangeSlider;
+
+	private JCheckBox
+	varyMuteProbabilityCheckBox;
+
+	private JSlider
+	varyMuteProbabilitySlider;
 
 	private JCheckBox
 	varyNoteKeepSameCheckBox;
@@ -464,8 +676,26 @@ public class VaryWindow
 	private JCheckBox
 	varyNoteUpperCheckBox;
 
-	private JTextField
-	varyNoteRangeTextField;
+	private JSlider
+	varyNoteRangeSlider;
+
+	private JCheckBox
+	varyProbabilityCheckBox;
+
+	private JSlider
+	varyProbabilitySlider;
+
+	private JCheckBox
+	varyRatchetProbabilityCheckBox;
+
+	private JSlider
+	varyRatchetProbabilitySlider;
+
+	private JCheckBox
+	varyTieProbabilityCheckBox;
+
+	private JSlider
+	varyTieProbabilitySlider;
 
 	private JCheckBox
 	varyVelocityKeepSameCheckBox;
@@ -476,91 +706,9 @@ public class VaryWindow
 	private JCheckBox
 	varyVelocityUpperCheckBox;
 
-	private JTextField
-	varyVelocityRangeTextField;
+	private JSlider
+	varyVelocityRangeSlider;
 
-	// INNER CLASSES
-	
-	// I mean, there has to be a better way...?
-	// but the filter overrides are called for each digit, so...
-
-	class NumbersOnlyDocumentFilter
-	extends DocumentFilter
-	{
-		public
-		NumbersOnlyDocumentFilter(JTextField inTextField, int inMinimum, int inMaximum)
-		{
-			this.textField = inTextField;
-			this.minimum = inMinimum;
-			this.maximum = inMaximum;
-		}
-
-		@Override
-		public void
-		insertString(DocumentFilter.FilterBypass inBypass, int inOffset, String inString, AttributeSet inAttributes) 
-		throws BadLocationException
-		{
-			if (inString != null && inString.matches("\\d*"))
-			{
-				String	oldString = this.textField.getText();
-
-				super.insertString(inBypass, inOffset, inString, inAttributes);
-
-				String	newString = this.textField.getText();
-
-				try
-				{
-					int	number = Integer.parseInt(newString);
-
-					if (number < this.minimum || number > this.maximum)
-					{
-						this.textField.setText(oldString);
-					}
-				}
-				catch (Exception inException)
-				{
-				}
-			}
-		}
-		
-		@Override
-		public void
-		replace(DocumentFilter.FilterBypass inBypass, int inOffset, int inLength, String inText, AttributeSet inAttributes) 
-		throws BadLocationException
-		{
-			if (inText != null && inText.matches("\\d*"))
-			{
-				String	oldString = this.textField.getText();
-
-				super.replace(inBypass, inOffset, inLength, inText, inAttributes);
-
-				String	newString = this.textField.getText();
-
-				try
-				{
-					int	number = Integer.parseInt(newString);
-
-					if (number < this.minimum || number > this.maximum)
-					{
-						this.textField.setText(oldString);
-					}
-				}
-				catch (Exception inException)
-				{
-				}
-			}
-		}
-
-		private int
-		maximum;
-
-		private int
-		minimum;
-
-		private JTextField
-		textField;
-
-	}
 
 }
 

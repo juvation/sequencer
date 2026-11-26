@@ -1533,24 +1533,13 @@ public class SequencerWindow
 			return inLower;
 		}
 
-		System.err.println("getRandomIntInRange() with lower " + inLower + " and upper " + inUpper);
-
 		int	range = inUpper - inLower;
 		range++;
 
-		System.err.println("getRandomIntInRange() range = " + range);
-
 		int	random = (int) Math.abs(this.random.nextInt());
-
-		System.err.println("getRandomIntInRange() random = " + random);
-
 		random %= range;
 
-		System.err.println("getRandomIntInRange() random modulus'd = " + random);
-
 		int	result = inLower + (random % range);
-
-		System.err.println("getRandomIntInRange() result = " + result);
 
 		return result;
 	}
