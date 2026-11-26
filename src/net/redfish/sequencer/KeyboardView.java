@@ -8,6 +8,7 @@ package net.redfish.sequencer;
 
 // IMPORTS
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -171,8 +172,16 @@ public class KeyboardView
 
 		FontMetrics	metrics = inGraphics.getFontMetrics();
 
+		// save this off so we can be nice citizens and restore it
+		// after we're finished drawing the keyboard
+		Color	currentColour = inGraphics.getColor();
+
 		for (int key = 0; key < numWhiteKeys; key++)
 		{
+			inGraphics.setColor(Color.WHITE);
+			inGraphics.fillRect(key * keyWidth, 0, keyWidth, bounds.height - 1);
+
+			inGraphics.setColor(Color.BLACK);
 			inGraphics.drawRect(key * keyWidth, 0, keyWidth, bounds.height - 1);
 
 			// label the key
@@ -240,6 +249,8 @@ public class KeyboardView
 
 			inGraphics.drawString(noteString, key * keyWidth + ((keyWidth / 2) - (noteStringWidth / 2)), bounds.height - 20);
 		}
+
+		inGraphics.setColor(currentColour);
 
 		// for each octave
 		int	numOctaves = numWhiteKeys / 7;
