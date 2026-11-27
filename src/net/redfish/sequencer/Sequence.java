@@ -63,11 +63,10 @@ public class Sequence
 	}
 
 	public void
-	read(InputStream inStream)
+	read(Map<String, Object> inSequenceMap)
 	throws IOException, NoSuchElementException
 	{
-		Map<String, Object>	sequenceMap = JSON.parse(inStream);
-		Object							stepsObject = sequenceMap.get("steps");
+		Object	stepsObject = inSequenceMap.get("steps");
 
 		if (stepsObject == null || !(stepsObject instanceof List))
 		{
@@ -172,8 +171,8 @@ public class Sequence
 		getStep(inStepNumber).setOption(inOptionNumber, inOption);
 	}
 
-	public void
-	write(OutputStream outStream)
+	public Map<String, Object>
+	write()
 	throws IOException
 	{
 		Map<String, Object>	sequenceMap = new HashMap<String, Object>();
@@ -215,21 +214,8 @@ public class Sequence
 				optionsList.add(optionMap);				
 			}
 		}
-
-		OutputStreamWriter	osw = new OutputStreamWriter(outStream);
 	
-		try
-		{
-			// careful here, the static stringifier method doesn't allow tarting up
-			OurJSONStringifier	stringifier = new OurJSONStringifier();
-			stringifier.setTartUp(true);
-			
-			stringifier.stringifyObject(sequenceMap, osw, 2);
-		}
-		finally
-		{
-			osw.close();
-		}
+		return sequenceMap;
 	}
 
 	// PRIVATE DATA

@@ -28,8 +28,8 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -82,6 +82,11 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.UIManager;
 
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
+
+import hm.mono.JSON;
+import hm.mono.MapWrapper;
+import hm.mono.OurJSONStringifier;
+
 
 // CLASS
 
@@ -761,10 +766,10 @@ public class SequencerWindow
 		keyList.add("Bb major");
 		keyList.add("B major");
 
-		JComboBox	keyPopup = new JComboBox (keyList.toArray());
-		keyPopup.setActionCommand ("KEY_POPUP");
-		keyPopup.addActionListener (this);
-		lowerToolBar.add (keyPopup);
+		this.keyPopup = new JComboBox (keyList.toArray());
+		this.keyPopup.setActionCommand ("KEY_POPUP");
+		this.keyPopup.addActionListener (this);
+		lowerToolBar.add (this.keyPopup);
 		
 		loadMidiChannelPreference();
 
@@ -1966,7 +1971,6 @@ public class SequencerWindow
 			
 			this.midiOutputDevicePopup.setSelectedIndex (selectedOutputIndex);
 		}
-
 	}
 	
 	private void
@@ -1983,11 +1987,17 @@ public class SequencerWindow
 		
 		try
 		(
-			FileInputStream	fis = new FileInputStream(file);
+			FileReader	fr = new FileReader(file);
 		)
 		{
-			this.sequence.read(fis);
-			
+
+			Map<String, Object>	sequenceMap = JSON.parse(fr);
+			MapWrapper					sequenceMapWrapper = new MapWrapper(sequenceMap);
+
+			this.keyPopup.setSelectedIndex(sequenceMapWrapper.getInt("key", 0));
+
+			this.sequence.read(sequenceMap);
+
 			this.file = file;
 			setSequenceModified(false, true);
 			this.sequenceTable.revalidate();
@@ -2371,11 +2381,9 @@ System.err.println ("using JavaMIDI for MIDI");
 		}
 	}
 	
-	private boolean
+	private void
 	saveSequence(boolean inAskForFile)
 	{
-		boolean	saved = false;
-		
 		if (inAskForFile || this.file == null)
 		{
 			File	tempFile = SequencerWindow.getFileForSave(this, "Save", null);
@@ -2388,7 +2396,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			{
 				// otherwise we save to the original file
 				// having selected "Save as..." and cancelled the dialog
-				return false;
+				return;
 			}
 		}
 		
@@ -2398,13 +2406,19 @@ System.err.println ("using JavaMIDI for MIDI");
 
 			try
 			(
-				FileOutputStream	fos = new FileOutputStream(this.file);
+				FileWriter	fw = new FileWriter(this.file);
 			)
 			{
-				this.sequence.write(fos);
-				
+				Map<String, Object>	sequenceMap = this.sequence.write();
+
+				sequenceMap.put("key", this.keyPopup.getSelectedIndex());
+
+				// careful here, the static stringifier method doesn't allow tarting up
+				OurJSONStringifier	stringifier = new OurJSONStringifier();
+				stringifier.setTartUp(true);
+				stringifier.stringifyObject(sequenceMap, fw, 2);
+
 				setSequenceModified(false, false);
-				saved = true;
 
 				setTitle("AssQuencer - " + this.file.getName());
 			}
@@ -2413,8 +2427,6 @@ System.err.println ("using JavaMIDI for MIDI");
 				SequencerWindow.showErrorDialog("Error", inException);
 			}
 		}
-		
-		return saved;
 	}
 
 	// this goes off at 24ppqn
@@ -2635,6 +2647,9 @@ System.err.println ("using JavaMIDI for MIDI");
 
 	private int[]
 	keyMap = new int[128];
+
+	private JComboBox
+	keyPopup;
 
 	private int
 	midiChannel0 = 0;
