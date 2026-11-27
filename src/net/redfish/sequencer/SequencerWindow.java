@@ -1979,13 +1979,13 @@ public class SequencerWindow
 			return;
 		}
 		
-		FileInputStream	fis = null;
+		System.err.println("opening file " + file.getAbsolutePath());
 		
 		try
+		(
+			FileInputStream	fis = new FileInputStream(file);
+		)
 		{
-			System.err.println("opening file " + file.getAbsolutePath());
-
-			fis = new FileInputStream(file);
 			this.sequence.read(fis);
 			
 			this.file = file;
@@ -1998,19 +1998,6 @@ public class SequencerWindow
 		catch(Exception inException)
 		{
 			SequencerWindow.showErrorDialog("Error", inException);
-		}
-		finally
-		{
-			if (fis != null)
-			{
-				try
-				{
-					fis.close();
-				}
-				catch(Exception inException)
-				{
-				}
-			}
 		}
 	}
 
@@ -2375,7 +2362,7 @@ System.err.println ("using JavaMIDI for MIDI");
 			{
 				TableCellRenderer	renderer = this.sequenceTable.getCellRenderer(row, col);
 				Component	component = this.sequenceTable.prepareRenderer(renderer, row, col);
-				int	componentHeight = component.getPreferredSize().height +(2 * inMargin);
+				int	componentHeight = component.getPreferredSize().height + (2 * inMargin);
 				
 				height = Math.max(height, componentHeight);
 			}
@@ -2407,13 +2394,13 @@ System.err.println ("using JavaMIDI for MIDI");
 		
 		if (this.file != null)
 		{
-			FileOutputStream	fos = null;
-			
-			try
-			{
-				System.err.println("saving to file " + this.file.getAbsolutePath());
+			System.err.println("saving to file " + this.file.getAbsolutePath());
 
-				fos = new FileOutputStream(this.file);
+			try
+			(
+				FileOutputStream	fos = new FileOutputStream(this.file);
+			)
+			{
 				this.sequence.write(fos);
 				
 				setSequenceModified(false, false);
@@ -2424,19 +2411,6 @@ System.err.println ("using JavaMIDI for MIDI");
 			catch(Exception inException)
 			{
 				SequencerWindow.showErrorDialog("Error", inException);
-			}
-			finally
-			{
-				if (fos != null)
-				{
-					try
-					{
-						fos.close();
-					}
-					catch(Exception inException)
-					{
-					}
-				}
 			}
 		}
 		
